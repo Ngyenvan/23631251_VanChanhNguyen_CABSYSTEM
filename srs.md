@@ -573,22 +573,6 @@
  | Should have | BR05 | P2 | Cải thiện chất lượng dịch vụ nhưng không ngăn việc hoàn thành chuyến. |
  | Could have | Báo cáo nâng cao, khuyến mãi | P3 | Có thể triển khai sau giai đoạn 1. |
 
- ```mermaid
- quadrantChart
-	 title Ma trận ưu tiên business requirement của CAB SYSTEM
-	 x-axis "Giá trị nghiệp vụ thấp" --> "Giá trị nghiệp vụ cao"
-	 y-axis "Khẩn cấp thấp" --> "Khẩn cấp cao"
-	 quadrant-1 "Làm ngay"
-	 quadrant-2 "Lập kế hoạch"
-	 quadrant-3 "Theo dõi"
-	 quadrant-4 "Cân nhắc"
-	 BR01 Đặt chuyến: [0.92, 0.95]
-	 BR02 Tìm tài xế: [0.90, 0.92]
-	 BR03 Trạng thái chuyến: [0.82, 0.84]
-	 BR04 Thanh toán: [0.86, 0.78]
-	 BR05 Đánh giá: [0.62, 0.48]
- ```
-
  ## 14. Requirements traceability matrix (B14)
 
  Requirements Traceability Matrix (`RTM`) là ma trận truy xuất nguồn gốc yêu cầu. RTM theo dõi một nhu cầu từ mục tiêu kinh doanh, qua BR, FR, UC, đến tiêu chí nghiệm thu AC. Nhờ đó BA có thể xác định yêu cầu bắt đầu từ đâu, được thiết kế trong chức năng nào, được thực hiện ở use case nào và kiểm thử bằng case nào.
