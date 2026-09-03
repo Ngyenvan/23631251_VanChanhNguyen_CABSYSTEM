@@ -1,0 +1,92 @@
+openapi: 3.0.3
+info:
+  title: CAB SYSTEM - Drivers API
+  version: 1.0.0
+  description: API quản lý hồ sơ, phương tiện, trạng thái sẵn sàng và vị trí tài xế.
+servers:
+  - url: https://api.cabsystem.example.com/v1
+    description: Production server
+tags:
+  - name: Drivers
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: {type: string, example: INVALID_LOCATION}
+        message: {type: string, example: Tọa độ không hợp lệ}
+    VehicleType: {type: string, enum: [BIKE, CAR]}
+    AvailabilityStatus: {type: string, enum: [AVAILABLE, OFFLINE, BUSY]}
+    DriverProfileRequest:
+      type: object
+      required: [vehicle_type, license_plate]
+      properties:
+        vehicle_type: {$ref: '#/components/schemas/VehicleType'}
+        license_plate: {type: string, example: 51A-123.45}
+    Driver:
+      type: object
+      required: [driver_id, user_id, vehicle_type, license_plate, rating, availability_status]
+      properties:
+        driver_id: {type: integer, example: 201}
+        user_id: {type: integer, example: 102}
+        full_name: {type: string, example: Tran Van Driver}
+        phone: {type: string, example: '0912345678'}
+        vehicle_type: {$ref: '#/components/schemas/VehicleType'}
+        license_plate: {type: string, example: 51A-123.45}
+        rating: {type: number, format: float, minimum: 0, maximum: 5, example: 4.8}
+        availability_status: {$ref: '#/components/schemas/AvailabilityStatus'}
+    DriverAvailabilityRequest:
+      type: object
+      required: [availability_status, current_latitude, current_longitude]
+      properties:
+        availability_status: {$ref: '#/components/schemas/AvailabilityStatus'}
+        current_latitude: {type: number, format: double, minimum: -90, maximum: 90, example: 10.7769}
+        current_longitude: {type: number, format: double, minimum: -180, maximum: 180, example: 106.7009}
+paths:
+  /drivers/me:
+    put:
+      tags: [Drivers]
+      summary: Cập nhật hồ sơ và phương tiện tài xế
+      operationId: updateDriverProfile
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/DriverProfileRequest'}}}
+      responses:
+        '200':
+          description: Cập nhật hồ sơ tài xế thành công
+          content: {application/json: {schema: {$ref: '#/components/schemas/Driver'}}}
+        '403':
+          description: Người dùng không có vai trò tài xế
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+        '409':
+          description: Biển số đã thuộc về tài xế khác
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+  /drivers/me/availability:
+    patch:
+      tags: [Drivers]
+      summary: Cập nhật trạng thái sẵn sàng và vị trí tài xế
+      operationId: updateDriverAvailability
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/DriverAvailabilityRequest'}}}
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content: {application/json: {schema: {$ref: '#/components/schemas/DriverAvailabilityRequest'}}}
+        '400':
+          description: Tọa độ hoặc trạng thái không hợp lệ
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+        '403':
+          description: Người dùng không có vai trò tài xế
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+        '409':
+          description: Tài xế đang có chuyến hoạt động
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}

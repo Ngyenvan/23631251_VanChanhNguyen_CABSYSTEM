@@ -1,0 +1,63 @@
+openapi: 3.0.3
+info:
+  title: CAB SYSTEM - Ratings API
+  version: 1.0.0
+  description: API đánh giá tài xế sau khi chuyến đã hoàn tất.
+servers:
+  - url: https://api.cabsystem.example.com/v1
+    description: Production server
+tags:
+  - name: Ratings
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: {type: string, example: INVALID_SCORE}
+        message: {type: string, example: Điểm đánh giá phải từ 1 đến 5}
+    RatingRequest:
+      type: object
+      required: [score]
+      properties:
+        score: {type: integer, minimum: 1, maximum: 5, example: 5}
+        comment: {type: string, example: Tài xế thân thiện và đúng giờ}
+    Rating:
+      allOf:
+        - $ref: '#/components/schemas/RatingRequest'
+        - type: object
+          required: [rating_id, ride_id, driver_id]
+          properties:
+            rating_id: {type: integer, example: 9001}
+            ride_id: {type: integer, example: 3001}
+            driver_id: {type: integer, example: 201}
+paths:
+  /rides/{ride_id}/rating:
+    post:
+      tags: [Ratings]
+      summary: Đánh giá tài xế sau chuyến
+      operationId: rateDriver
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: ride_id
+          in: path
+          required: true
+          schema: {type: integer, example: 3001}
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/RatingRequest'}}}
+      responses:
+        '201':
+          description: Lưu đánh giá thành công và cập nhật điểm trung bình tài xế
+          content: {application/json: {schema: {$ref: '#/components/schemas/Rating'}}}
+        '400':
+          description: Điểm đánh giá không hợp lệ
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+        '403':
+          description: Người gửi không phải khách hàng của chuyến
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+        '409':
+          description: Chuyến chưa hoàn tất hoặc đã được đánh giá
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}

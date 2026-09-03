@@ -1,0 +1,148 @@
+openapi: 3.0.3
+info:
+  title: CAB SYSTEM - Authentication API
+  version: 1.0.0
+  description: API đăng ký và đăng nhập tài khoản CAB SYSTEM.
+servers:
+  - url: https://api.cabsystem.example.com/v1
+    description: Production server
+tags:
+  - name: Authentication
+paths:
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Đăng ký tài khoản
+      operationId: registerUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Tạo tài khoản thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Số điện thoại đã được đăng ký
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Đăng nhập
+      operationId: loginUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Thông tin đăng nhập không đúng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: INVALID_CREDENTIALS
+        message:
+          type: string
+          example: Số điện thoại hoặc mật khẩu không đúng
+    User:
+      type: object
+      required: [user_id, full_name, phone, role, status]
+      properties:
+        user_id:
+          type: integer
+          example: 101
+        full_name:
+          type: string
+          example: Nguyen Van An
+        phone:
+          type: string
+          example: '0901234567'
+        role:
+          type: string
+          enum: [CUSTOMER, DRIVER, OPERATIONS, ADMIN]
+          example: CUSTOMER
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, LOCKED]
+          example: ACTIVE
+    RegisterRequest:
+      type: object
+      required: [full_name, phone, password, role]
+      properties:
+        full_name:
+          type: string
+          example: Nguyen Van An
+        phone:
+          type: string
+          example: '0901234567'
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: StrongPassword123
+        role:
+          type: string
+          enum: [CUSTOMER, DRIVER]
+          example: CUSTOMER
+    LoginRequest:
+      type: object
+      required: [phone, password]
+      properties:
+        phone:
+          type: string
+          example: '0901234567'
+        password:
+          type: string
+          format: password
+          example: StrongPassword123
+    LoginResponse:
+      type: object
+      required: [access_token, token_type, expires_in, user]
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiJ9.example
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          example: 3600
+        user:
+          $ref: '#/components/schemas/User'
+  responses:
+    ValidationError:
+      description: Dữ liệu không hợp lệ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

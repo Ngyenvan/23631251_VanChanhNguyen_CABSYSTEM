@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: CAB SYSTEM - Users API
+  version: 1.0.0
+  description: API xem và cập nhật hồ sơ người dùng.
+servers:
+  - url: https://api.cabsystem.example.com/v1
+    description: Production server
+tags:
+  - name: Users
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: {type: string, example: UNAUTHORIZED}
+        message: {type: string, example: Token không hợp lệ}
+    User:
+      type: object
+      required: [user_id, full_name, phone, role, status]
+      properties:
+        user_id: {type: integer, example: 101}
+        full_name: {type: string, example: Nguyen Van An}
+        phone: {type: string, example: '0901234567'}
+        role: {type: string, enum: [CUSTOMER, DRIVER, OPERATIONS, ADMIN], example: CUSTOMER}
+        status: {type: string, enum: [ACTIVE, INACTIVE, LOCKED], example: ACTIVE}
+    UpdateUserRequest:
+      type: object
+      minProperties: 1
+      properties:
+        full_name: {type: string, example: Nguyen Van B}
+        phone: {type: string, example: '0901234567'}
+paths:
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Xem hồ sơ người dùng
+      operationId: getCurrentUser
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Trả về hồ sơ thành công
+          content: {application/json: {schema: {$ref: '#/components/schemas/User'}}}
+        '401':
+          description: Chưa xác thực hoặc token không hợp lệ
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    patch:
+      tags: [Users]
+      summary: Cập nhật hồ sơ người dùng
+      operationId: updateCurrentUser
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/UpdateUserRequest'}}}
+      responses:
+        '200':
+          description: Cập nhật hồ sơ thành công
+          content: {application/json: {schema: {$ref: '#/components/schemas/User'}}}
+        '400':
+          description: Dữ liệu cập nhật không hợp lệ
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+        '401':
+          description: Chưa xác thực hoặc token không hợp lệ
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+        '409':
+          description: Số điện thoại mới đã được sử dụng
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}

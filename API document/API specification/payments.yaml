@@ -1,0 +1,135 @@
+openapi: 3.0.3
+info:
+  title: CAB SYSTEM - Payments API
+  version: 1.0.0
+  description: API thanh toán tiền mặt, trực tuyến và callback từ payment gateway.
+servers:
+  - url: https://api.cabsystem.example.com/v1
+    description: Production server
+tags:
+  - name: Payments
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  parameters:
+    RideId:
+      name: ride_id
+      in: path
+      required: true
+      schema: {type: integer, example: 3001}
+    PaymentId:
+      name: payment_id
+      in: path
+      required: true
+      schema: {type: integer, example: 8001}
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: {type: string, example: pay-20260903-0001}
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: {type: string, example: PAYMENT_AMOUNT_MISMATCH}
+        message: {type: string, example: Số tiền thanh toán không khớp giá cuối}
+    Payment:
+      type: object
+      required: [payment_id, ride_id, method, status, amount]
+      properties:
+        payment_id: {type: integer, example: 8001}
+        ride_id: {type: integer, example: 3001}
+        method: {type: string, enum: [CASH, ONLINE], example: ONLINE}
+        status: {type: string, enum: [CASH_PENDING, PENDING, PAID, FAILED], example: PENDING}
+        amount: {type: number, example: 102000}
+        provider_transaction_id: {type: string, nullable: true, example: gateway-tx-998877}
+        checkout_url: {type: string, format: uri, nullable: true, example: https://payment.example.com/checkout/8001}
+        paid_at: {type: string, format: date-time, nullable: true, example: '2026-09-03T10:30:00Z'}
+    CreatePaymentRequest:
+      type: object
+      required: [method, request_id]
+      properties:
+        method: {type: string, enum: [CASH, ONLINE], example: CASH}
+        request_id: {type: string, example: pay-20260903-0001}
+    CashConfirmationRequest:
+      type: object
+      required: [collected_amount]
+      properties:
+        collected_amount: {type: number, example: 102000}
+    PaymentCallbackRequest:
+      type: object
+      required: [provider_transaction_id, payment_id, result_code, amount, signature]
+      properties:
+        provider_transaction_id: {type: string, example: gateway-tx-998877}
+        payment_id: {type: integer, example: 8001}
+        result_code: {type: string, enum: [SUCCESS, FAILED], example: SUCCESS}
+        amount: {type: number, example: 102000}
+        signature: {type: string, example: valid-provider-signature}
+paths:
+  /rides/{ride_id}/payments:
+    post:
+      tags: [Payments]
+      summary: Tạo thanh toán cho chuyến hoàn tất
+      operationId: createPayment
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/CreatePaymentRequest'}}}
+      responses:
+        '201':
+          description: Tạo yêu cầu thanh toán thành công
+          content: {application/json: {schema: {$ref: '#/components/schemas/Payment'}}}
+        '400':
+          description: Chuyến chưa COMPLETED hoặc dữ liệu không hợp lệ
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+        '409':
+          description: Đã có giao dịch hợp lệ hoặc request_id bị trùng
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+  /payments/{payment_id}/cash-confirmation:
+    post:
+      tags: [Payments]
+      summary: Xác nhận đã thu tiền mặt
+      operationId: confirmCashPayment
+      security: [{bearerAuth: []}]
+      parameters: [{$ref: '#/components/parameters/PaymentId'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/CashConfirmationRequest'}}}
+      responses:
+        '200':
+          description: Chuyển CASH_PENDING sang PAID
+          content: {application/json: {schema: {$ref: '#/components/schemas/Payment'}}}
+        '400':
+          description: Số tiền thu không khớp
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+        '403':
+          description: Người xác nhận không phải tài xế được gán
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+  /payments/callback:
+    post:
+      tags: [Payments]
+      summary: Callback kết quả thanh toán trực tuyến
+      operationId: paymentCallback
+      security: []
+      parameters:
+        - name: X-Payment-Signature
+          in: header
+          required: true
+          schema: {type: string}
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/PaymentCallbackRequest'}}}
+      responses:
+        '200':
+          description: Callback hợp lệ; SUCCESS chuyển payment sang PAID, FAILED ghi nhận FAILED
+          content: {application/json: {schema: {$ref: '#/components/schemas/Payment'}}}
+        '400':
+          description: Callback hoặc chữ ký không hợp lệ
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+        '409':
+          description: Callback trùng hoặc số tiền không khớp
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}

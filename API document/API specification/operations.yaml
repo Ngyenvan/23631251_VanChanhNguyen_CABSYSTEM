@@ -1,0 +1,103 @@
+openapi: 3.0.3
+info:
+  title: CAB SYSTEM - Operations API
+  version: 1.0.0
+  description: API để Operations staff theo dõi chuyến và ghi nhận sự cố.
+servers:
+  - url: https://api.cabsystem.example.com/v1
+    description: Production server
+tags:
+  - name: Operations
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: {type: string, example: OPERATIONS_ACCESS_REQUIRED}
+        message: {type: string, example: Chỉ Operations staff hoặc Admin được sử dụng}
+    RideSummary:
+      type: object
+      properties:
+        ride_id: {type: integer, example: 3001}
+        customer_id: {type: integer, example: 101}
+        driver_id: {type: integer, example: 201}
+        status: {type: string, enum: [SEARCHING_DRIVER, DRIVER_ASSIGNED, DRIVER_ARRIVING, IN_PROGRESS], example: IN_PROGRESS}
+        pickup_address: {type: string, example: '1 Nguyen Hue, District 1'}
+        destination_address: {type: string, example: 'Tan Son Nhat Airport'}
+        updated_at: {type: string, format: date-time, example: '2026-09-03T10:20:00Z'}
+    RideList:
+      type: object
+      properties:
+        page: {type: integer, example: 1}
+        limit: {type: integer, example: 50}
+        total: {type: integer, example: 1}
+        items: {type: array, items: {$ref: '#/components/schemas/RideSummary'}}
+    IncidentRequest:
+      type: object
+      required: [ride_id, incident_type, description]
+      properties:
+        ride_id: {type: integer, example: 3001}
+        incident_type: {type: string, enum: [SAFETY, PAYMENT, DRIVER, CUSTOMER, TECHNICAL, OTHER], example: TECHNICAL}
+        description: {type: string, example: Ứng dụng mất kết nối khi đang theo dõi chuyến}
+        priority: {type: string, enum: [LOW, MEDIUM, HIGH], default: MEDIUM, example: MEDIUM}
+    Incident:
+      allOf:
+        - $ref: '#/components/schemas/IncidentRequest'
+        - type: object
+          required: [incident_id, status, created_at]
+          properties:
+            incident_id: {type: integer, example: 10001}
+            status: {type: string, enum: [OPEN, IN_PROGRESS, RESOLVED, CLOSED], example: OPEN}
+            created_at: {type: string, format: date-time, example: '2026-09-03T10:25:00Z'}
+paths:
+  /operations/rides/active:
+    get:
+      tags: [Operations]
+      summary: Xem danh sách chuyến đang vận hành
+      operationId: listActiveRides
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: {type: string, enum: [SEARCHING_DRIVER, DRIVER_ASSIGNED, DRIVER_ARRIVING, IN_PROGRESS]}
+        - name: page
+          in: query
+          required: false
+          schema: {type: integer, minimum: 1, default: 1}
+        - name: limit
+          in: query
+          required: false
+          schema: {type: integer, minimum: 1, maximum: 100, default: 50}
+      responses:
+        '200':
+          description: Danh sách chuyến đang hoạt động
+          content: {application/json: {schema: {$ref: '#/components/schemas/RideList'}}}
+        '403':
+          description: Không có quyền vận hành
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+  /operations/incidents:
+    post:
+      tags: [Operations]
+      summary: Ghi nhận sự cố chuyến đi
+      operationId: createIncident
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/IncidentRequest'}}}
+      responses:
+        '201':
+          description: Ghi nhận sự cố thành công
+          content: {application/json: {schema: {$ref: '#/components/schemas/Incident'}}}
+        '400':
+          description: Dữ liệu sự cố không hợp lệ
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+        '403':
+          description: Không có quyền ghi nhận sự cố
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+        '404':
+          description: Không tìm thấy chuyến
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}

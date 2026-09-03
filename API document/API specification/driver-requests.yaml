@@ -1,0 +1,95 @@
+openapi: 3.0.3
+info:
+  title: CAB SYSTEM - Driver Requests API
+  version: 1.0.0
+  description: API tìm tài xế trong bán kính 5 km và xử lý nhận hoặc từ chối chuyến.
+servers:
+  - url: https://api.cabsystem.example.com/v1
+    description: Production server
+tags:
+  - name: Driver Requests
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  parameters:
+    RideId:
+      name: ride_id
+      in: path
+      required: true
+      schema: {type: integer, example: 3001}
+    RequestId:
+      name: request_id
+      in: path
+      required: true
+      schema: {type: integer, example: 7001}
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: {type: string, example: REQUEST_EXPIRED}
+        message: {type: string, example: Tài xế phản hồi sau 30 giây}
+    DriverRequestResponse:
+      type: object
+      required: [decision]
+      properties:
+        decision: {type: string, enum: [ACCEPTED, DECLINED], example: ACCEPTED}
+    DriverRequestResult:
+      type: object
+      required: [request_id, decision, ride_id]
+      properties:
+        request_id: {type: integer, example: 7001}
+        decision: {type: string, enum: [ACCEPTED, DECLINED], example: ACCEPTED}
+        ride_id: {type: integer, example: 3001}
+        ride_status: {type: string, enum: [DRIVER_ASSIGNED, SEARCHING_DRIVER], example: DRIVER_ASSIGNED}
+        driver_availability_status: {type: string, enum: [BUSY, AVAILABLE], example: BUSY}
+    DriverRequestDispatch:
+      type: object
+      properties:
+        ride_id: {type: integer, example: 3001}
+        search_radius_km: {type: number, example: 5}
+        request_timeout_seconds: {type: integer, example: 30}
+        requests_sent:
+          type: array
+          items:
+            type: object
+            properties:
+              request_id: {type: integer, example: 7001}
+              driver_id: {type: integer, example: 201}
+              status: {type: string, enum: [SENT, ACCEPTED, DECLINED, EXPIRED], example: SENT}
+              expires_at: {type: string, format: date-time, example: '2026-09-03T10:00:30Z'}
+paths:
+  /rides/{ride_id}/driver-requests:
+    post:
+      tags: [Driver Requests]
+      summary: Gửi yêu cầu chuyến cho tài xế phù hợp
+      operationId: sendDriverRequests
+      security: [{bearerAuth: []}]
+      parameters: [{$ref: '#/components/parameters/RideId'}]
+      responses:
+        '202':
+          description: Đã gửi yêu cầu cho tài xế AVAILABLE, đúng loại xe, trong bán kính 5 km
+          content: {application/json: {schema: {$ref: '#/components/schemas/DriverRequestDispatch'}}}
+        '409':
+          description: Chuyến không ở trạng thái tìm tài xế
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+  /driver-requests/{request_id}/respond:
+    post:
+      tags: [Driver Requests]
+      summary: Tài xế nhận hoặc từ chối yêu cầu chuyến
+      operationId: respondToDriverRequest
+      security: [{bearerAuth: []}]
+      parameters: [{$ref: '#/components/parameters/RequestId'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/DriverRequestResponse'}}}
+      responses:
+        '200':
+          description: Phản hồi được xử lý
+          content: {application/json: {schema: {$ref: '#/components/schemas/DriverRequestResult'}}}
+        '403':
+          description: Yêu cầu không thuộc tài xế hiện tại
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+        '409':
+          description: Yêu cầu hết hạn hoặc chuyến đã có tài xế
+          content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
