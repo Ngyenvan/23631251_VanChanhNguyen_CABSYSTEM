@@ -1,0 +1,16 @@
+system: CAB SYSTEM
+document_type: business_requirements
+business_requirements: "Business requirement (BR) mô tả nhu cầu ở cấp độ nghiệp vụ; mã BR01, BR02... là mã định danh duy nhất\
+  \ để truy vết sang các functional requirements (FR).\n\n | Mã | Tên business requirement | Diễn giải |\n\n |---|---|---|\n\
+  \n | BR01 | Đặt chuyến | Khách hàng có thể tạo chuyến bằng cách cung cấp điểm đón, điểm đến và loại xe; hệ thống kiểm tra\
+  \ dữ liệu và tạo yêu cầu chuyến. |\n\n | BR02 | Tìm và phân công tài xế | Hệ thống tìm các tài xế đang sẵn sàng trong bán\
+  \ kính 5 km, gửi yêu cầu theo thứ tự phù hợp và ghi nhận tài xế chấp nhận. |\n\n | BR03 | Quản lý trạng thái chuyến | Hệ\
+  \ thống cập nhật và hiển thị các trạng thái từ tạo chuyến đến hoàn tất hoặc hủy chuyến cho các bên liên quan. |\n\n | BR04\
+  \ | Thanh toán chuyến đi | Khách hàng được chọn tiền mặt hoặc trực tuyến; hệ thống lưu kết quả, trạng thái và thông tin\
+  \ đối soát. |\n\n | BR05 | Đánh giá và phản hồi | Khách hàng có thể đánh giá tài xế sau chuyến và gửi phản hồi để doanh\
+  \ nghiệp cải thiện chất lượng. |\n\n### 5.1. Business Requirement Priority Matrix\n\n```mermaid\nquadrantChart\n    title\
+  \ Business Requirement Priority Matrix\n    x-axis \"Độ phức tạp thấp\" --> \"Độ phức tạp cao\"\n    y-axis \"Tác động nghiệp\
+  \ vụ thấp\" --> \"Tác động nghiệp vụ cao\"\n    quadrant-1 \"Lập kế hoạch kỹ\"\n    quadrant-2 \"Ưu tiên triển khai\"\n\
+  \    quadrant-3 \"Có thể để sau\"\n    quadrant-4 \"Tối ưu/đơn giản hóa\"\n    BR01 Đặt chuyến: [0.55, 0.95]\n    BR02 Phân\
+  \ tài xế: [0.72, 0.92]\n    BR03 Trạng thái chuyến: [0.48, 0.88]\n    BR04 Thanh toán: [0.68, 0.90]\n    BR05 Đánh giá:\
+  \ [0.35, 0.62]\n```"

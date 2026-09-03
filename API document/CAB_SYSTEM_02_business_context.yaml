@@ -1,0 +1,283 @@
+system: CAB SYSTEM
+document_type: business_context
+business_context: '### 1.1. Business context
+
+
+   **\*\*Business context\*\*** là bối cảnh mà doanh nghiệp đang hoạt động, bao gồm mục tiêu, quy trình, các bên liên quan,
+  dữ liệu, quy định và những vấn đề cần giải quyết. Trong bài toán này, doanh nghiệp cung cấp dịch vụ kết nối nhu cầu di chuyển
+  của khách hàng với tài xế trong khu vực.
+
+
+   Bối cảnh hiện tại:
+
+
+   - Khách hàng cần đặt xe nhanh, biết trước điểm đón, điểm đến và chi phí dự kiến.
+
+
+   - Tài xế cần nhận được yêu cầu phù hợp với vị trí, loại xe và trạng thái sẵn sàng.
+
+
+   - Doanh nghiệp cần quản lý chuyến đi, doanh thu, đánh giá và lịch sử giao dịch.
+
+
+   - Việc điều phối phải hoạt động theo thời gian gần thực tế và có thể xử lý nhiều yêu cầu đồng thời.
+
+
+  ### 1.2. Business customer và business customization
+
+
+   - **\*\*Business customer\*\*** là đối tượng trực tiếp sử dụng hoặc trả tiền cho sản phẩm. Trong hệ thống này gồm khách
+  hàng đi xe, tài xế và doanh nghiệp vận hành nền tảng.
+
+
+   - **\*\*Business customization\*\*** là phần điều chỉnh hệ thống theo chính sách riêng của doanh nghiệp, ví dụ bán kính
+  tìm tài xế 5 km, loại xe được hỗ trợ, phương thức thanh toán, cách tính phí, thời gian chờ xác nhận và chính sách hủy chuyến.
+
+
+  ### 1.3. Vấn đề của hệ thống hiện tại
+
+
+   Hệ thống hiện tại (điện thoại, tin nhắn hoặc bảng tính) không đáp ứng được các yêu cầu sau:
+
+
+   1. Không cập nhật được vị trí khách hàng và tài xế theo thời gian thực.
+
+
+   2. Điều phối thủ công khiến việc tìm tài xế chậm, dễ bỏ sót hoặc phân công trùng chuyến.
+
+
+   3. Không có quy trình tự động khi tài xế từ chối, hết thời gian xác nhận hoặc không tìm được tài xế.
+
+
+   4. Không cung cấp ngay giá dự kiến, trạng thái chuyến và lịch sử cho khách hàng.
+
+
+   5. Thanh toán, đối soát doanh thu và quản lý đánh giá còn rời rạc, khó kiểm tra.
+
+
+   6. Khó mở rộng khi số lượng khách hàng, tài xế và chuyến đi tăng lên.
+
+
+   Vì vậy cần xây dựng ứng dụng mới có khả năng tự động hóa quy trình đặt chuyến, kết nối hai phía, quản lý dữ liệu tập trung
+  và tích hợp thanh toán.
+
+
+  ### 1.4. Các bên liên quan ban đầu
+
+
+   Khách hàng, tài xế, bộ phận điều phối/chăm sóc khách hàng, quản trị viên, bộ phận tài chính, đối tác thanh toán, đội vận
+  hành kỹ thuật và cơ quan quản lý là những bên có liên quan đến hệ thống.'
+stakeholders: '### 2.1. Bảng xác định stakeholder
+
+
+   | Mã | Stakeholder | Nhóm | Nhu cầu chính | Mức ảnh hưởng |
+
+
+   |---|---|---|---|---|
+
+
+   | ST01 | Khách hàng | Người dùng trực tiếp | Đặt xe nhanh, giá rõ ràng, chuyến an toàn | Cao |
+
+
+   | ST02 | Tài xế | Người dùng trực tiếp | Nhận chuyến phù hợp, biết điểm đón, nhận thu nhập | Cao |
+
+
+   | ST03 | Doanh nghiệp vận hành | Chủ sở hữu nghiệp vụ | Tăng số chuyến, doanh thu và chất lượng dịch vụ | Rất cao |
+
+
+   | ST04 | Điều phối viên/chăm sóc khách hàng | Vận hành | Theo dõi chuyến, hỗ trợ khi có sự cố | Cao |
+
+
+   | ST05 | Quản trị viên | Quản trị hệ thống | Quản lý tài khoản, cấu hình và báo cáo | Cao |
+
+
+   | ST06 | Đối tác thanh toán | Đối tác bên ngoài | Xử lý giao dịch trực tuyến chính xác | Trung bình |
+
+
+   | ST07 | Bộ phận tài chính | Nội bộ doanh nghiệp | Đối soát giao dịch và doanh thu | Trung bình |
+
+
+   | ST08 | Đội kỹ thuật | Hỗ trợ hệ thống | Hệ thống ổn định, bảo mật, dễ bảo trì | Cao |
+
+
+   | ST09 | Cơ quan quản lý | Bên quản lý | Tuân thủ quy định vận tải và dữ liệu | Trung bình |
+
+
+  ### 2.2. Bảng vai trò stakeholder
+
+
+   | Mã stakeholder | Vai trò trong hệ thống | Quyền hoặc trách nhiệm |
+
+
+   |---|---|---|
+
+
+   | ST01 | Người tạo và sử dụng chuyến | Nhập điểm đón/đến, chọn loại xe, thanh toán, đánh giá |
+
+
+   | ST02 | Người cung cấp dịch vụ | Cập nhật trạng thái sẵn sàng, nhận/từ chối chuyến, thực hiện chuyến |
+
+
+   | ST03 | Chủ quy trình và chính sách | Phê duyệt mục tiêu, giá, chính sách vận hành và KPI |
+
+
+   | ST04 | Giám sát và xử lý sự cố | Theo dõi chuyến, hỗ trợ người dùng, xử lý khiếu nại |
+
+
+   | ST05 | Quản lý dữ liệu cấu hình | Quản lý người dùng, tài xế, loại xe, quyền và báo cáo |
+
+
+   | ST06 | Xác nhận thanh toán | Tạo kết quả giao dịch và gửi trạng thái về hệ thống |
+
+
+   | ST07 | Kiểm tra tài chính | Đối soát giao dịch, hoàn tiền và lập báo cáo doanh thu |
+
+
+   | ST08 | Xây dựng và vận hành kỹ thuật | Phát triển, giám sát hiệu năng, sao lưu và bảo mật |
+
+
+   | ST09 | Kiểm tra tuân thủ | Yêu cầu báo cáo hoặc dữ liệu theo quy định pháp luật |
+
+
+  ### 2.3. Stakeholder matrix
+
+
+   Ma trận dưới đây phân loại theo **\*\*mức ảnh hưởng\*\*** và **\*\*mức quan tâm\*\***.
+
+
+   | Ảnh hưởng / Quan tâm | Thấp | Cao |
+
+
+   |---|---|---|
+
+
+   | **\*\*Cao\*\*** | ST06 Đối tác thanh toán, ST09 Cơ quan quản lý | ST01 Khách hàng, ST02 Tài xế, ST03 Doanh nghiệp, ST04
+  Điều phối, ST05 Quản trị viên, ST08 Đội kỹ thuật |
+
+
+   | **\*\*Thấp\*\*** | Không ưu tiên ở giai đoạn đầu | ST07 Bộ phận tài chính |
+
+
+   \`\`\`mermaid
+
+
+   quadrantChart
+
+
+       title Stakeholder matrix
+
+
+       x-axis "Mức quan tâm thấp" --> "Mức quan tâm cao"
+
+
+       y-axis "Ảnh hưởng thấp" --> "Ảnh hưởng cao"
+
+
+       quadrant-1 "Quản lý sát"
+
+
+       quadrant-2 "Duy trì hài lòng"
+
+
+       quadrant-3 "Theo dõi"
+
+
+       quadrant-4 "Cập nhật thông tin"
+
+
+       ST01 Khách hàng: [0.88, 0.82]
+
+
+       ST02 Tài xế: [0.86, 0.80]
+
+
+       ST03 Doanh nghiệp: [0.92, 0.95]
+
+
+       ST04 Điều phối: [0.78, 0.75]
+
+
+       ST05 Quản trị viên: [0.72, 0.78]
+
+
+       ST06 Thanh toán: [0.45, 0.68]
+
+
+       ST07 Tài chính: [0.65, 0.45]
+
+
+       ST08 Kỹ thuật: [0.84, 0.76]
+
+
+       ST09 Quản lý: [0.30, 0.62]
+
+
+   \`\`\`'
+business_goals: '| Mã | Business goal | Chỉ số kết quả mong đợi |
+
+
+   |---|---|---|
+
+
+   | BG01 | Cung cấp dịch vụ đặt chuyến nhanh và đáng tin cậy | Khách hàng tạo được chuyến, nhận trạng thái và tài xế trong
+  thời gian ngắn; giảm chuyến bị bỏ sót |
+
+
+   | BG02 | Cung cấp thanh toán linh hoạt, minh bạch | Hỗ trợ tiền mặt và trực tuyến; lưu được trạng thái giao dịch và đối
+  soát được doanh thu |
+
+
+   | BG03 | Tăng hiệu quả khai thác tài xế | Ưu tiên tài xế đang sẵn sàng, gần khách hàng và phù hợp loại xe |
+
+
+   | BG04 | Nâng cao an toàn và chất lượng dịch vụ | Có thông tin tài xế/chuyến, đánh giá sau chuyến và lưu vết xử lý sự cố
+  |
+
+
+   **\*\*BG02 - phương thức thanh toán:\*\***
+
+
+   - Tiền mặt: khách hàng thanh toán trực tiếp cho tài xế sau khi chuyến kết thúc.
+
+
+   - Trực tuyến: khách hàng thanh toán qua đối tác thanh toán; hệ thống chỉ xác nhận hoàn tất khi nhận được kết quả hợp lệ.'
+scope: '### Trong phạm vi giai đoạn 1
+
+
+   - Đăng ký, đăng nhập và quản lý hồ sơ khách hàng/tài xế.
+
+
+   - Tài xế cập nhật trạng thái sẵn sàng và vị trí.
+
+
+   - Khách hàng nhập điểm đón, điểm đến, loại xe và tạo chuyến.
+
+
+   - Tính giá dự kiến, tìm và gửi yêu cầu cho tài xế trong bán kính 5 km.
+
+
+   - Tài xế nhận hoặc từ chối chuyến; hệ thống chuyển sang tài xế khác khi cần.
+
+
+   - Theo dõi trạng thái chuyến: chờ tài xế, đã nhận, đang đi, hoàn tất, hủy.
+
+
+   - Thanh toán tiền mặt hoặc trực tuyến.
+
+
+   - Đánh giá sau chuyến, lịch sử chuyến và báo cáo cơ bản.
+
+
+  ### Ngoài phạm vi giai đoạn 1
+
+
+   - Giao hàng, đặt đồ ăn và vận chuyển hàng hóa.
+
+
+   - Thuật toán định giá động phức tạp theo thời tiết hoặc sự kiện.
+
+
+   - Ví điện tử riêng, chương trình hội viên và khuyến mãi nâng cao.
+
+
+   - Nhận diện khuôn mặt, camera hành trình và trung tâm hỗ trợ khẩn cấp tích hợp.'

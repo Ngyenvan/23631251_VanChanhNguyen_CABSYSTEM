@@ -1,0 +1,21 @@
+system: CAB SYSTEM
+document_type: business_process
+process: "\\`\\`\\`mermaid\nflowchart TD\n    A([Customer mở CAB SYSTEM]) --> B[Chọn dịch vụ di chuyển]\n    B --> C[Nhập/chọn\
+  \ điểm đón]\n    C --> D[Nhập điểm đến]\n    D --> E[Hệ thống xác định tuyến, khoảng cách và ước lượng giá]\n    E --> F{Thông\
+  \ tin hợp lệ?}\n    F -- Không --> G[Thông báo lỗi và yêu cầu sửa]\n    G --> C\n    F -- Có --> H[Customer chọn loại xe,\
+  \ phương thức thanh toán và xác nhận]\n    H --> I{Có thể tạo Ride?}\n    I -- Không --> J[Thông báo lý do và không tạo\
+  \ trùng]\n    J --> Z([Kết thúc])\n    I -- Có --> K[Tạo Ride = SEARCHING_DRIVER]\n    K --> L[Tìm Driver phù hợp theo trạng\
+  \ thái, loại xe, vị trí]\n    L --> M{Có Driver phù hợp?}\n    M -- Chưa có --> N[Tiếp tục tìm trong thời gian cho phép]\n\
+  \    N --> O{Còn thời gian tìm?}\n    O -- Có --> L\n    O -- Không --> P[Thông báo NO_DRIVER]\n    P --> Z\n    M -- Có\
+  \ --> Q[Gửi yêu cầu cho Driver]\n    Q --> R{Driver nhận trong timeout?}\n    R -- Không --> S[Ghi nhận EXPIRED/DECLINED]\n\
+  \    S --> T{Còn Driver khác?}\n    T -- Có --> Q\n    T -- Không --> N\n    R -- Có --> U[Lock Ride và gán Driver]\n  \
+  \  U --> V[Thông báo thông tin Driver cho Customer]\n    V --> W[Driver đến điểm đón]\n    W --> X[Chuyến bắt đầu và chuyển\
+  \ IN_PROGRESS]\n    X --> Y[Theo dõi vị trí/trạng thái]\n    Y --> AA[Driver hoàn tất chuyến]\n    AA --> AB[Tính giá cuối\
+  \ và ghi nhận chuyến COMPLETED]\n    AB --> AC[Thanh toán]\n    AC --> AD[Đánh giá/Phản hồi]\n    AD --> Z\n\\`\\`\\`\n\n\
+  ### 6.1. Ma trận trạng thái chuyến\n\n| Trạng thái hiện tại | Sự kiện | Trạng thái kế tiếp | Actor |\n|---|---|---|---|\n\
+  | `SEARCHING_DRIVER` | Driver nhận | `DRIVER_ASSIGNED` | Driver/System |\n| `SEARCHING_DRIVER` | Hết thời gian tìm | `NO_DRIVER`\
+  \ | System |\n| `SEARCHING_DRIVER` | Customer hủy | `CANCELLED` | Customer |\n| `DRIVER_ASSIGNED` | Driver đến điểm đón\
+  \ | `DRIVER_ARRIVING` | Driver |\n| `DRIVER_ASSIGNED` | Driver hủy | `SEARCHING_DRIVER` hoặc `CANCELLED` | Driver/System\
+  \ |\n| `DRIVER_ARRIVING` | Bắt đầu chuyến | `IN_PROGRESS` | Driver |\n| `DRIVER_ARRIVING` | Hủy hợp lệ | `CANCELLED` | Customer/Driver\
+  \ |\n| `IN_PROGRESS` | Driver hoàn tất | `COMPLETED` | Driver |\n| `COMPLETED` | Thanh toán thành công | `PAID`/hoàn tất\
+  \ thanh toán | System |"

@@ -1,0 +1,60 @@
+system: CAB SYSTEM
+document_type: ba_checklist
+checklist: '### 12.1. Checklist truy vết
+
+
+  - [ ] Mỗi Business Goal có KPI hoặc kết quả đo được.
+
+  - [ ] Mỗi Business Requirement có FR liên quan.
+
+  - [ ] Mỗi FR được thực hiện bởi ít nhất một Use Case hoặc quy trình hệ thống.
+
+  - [ ] Các luồng chính đều có alternate/exception flow.
+
+  - [ ] Các trạng thái Ride có điều kiện chuyển trạng thái rõ ràng.
+
+  - [ ] Thanh toán có success, failed, retry và đối soát.
+
+  - [ ] Có phân quyền đối với Customer, Driver, Vehicle, vị trí và giao dịch.
+
+  - [ ] Có log/audit cho các sự kiện quan trọng.
+
+  - [ ] Có NFR về hiệu năng, availability, bảo mật, riêng tư, nhất quán, phục hồi và truy vết.
+
+  - [ ] Có ma trận Stakeholder, Business Goal, Requirement/Use Case và Risk ở các phần phù hợp.
+
+
+  ### 12.2. Những điểm CAB SYSTEM đã bổ sung
+
+
+  1. Đổi tên hệ thống thành **CAB SYSTEM**.
+
+  2. Các mục lớn dùng số 1, 2, 3... và **không có chữ B đứng trước**; mã BR/FR/UC vẫn giữ để truy vết.
+
+  3. Bổ sung trải nghiệm **trước chuyến - trong chuyến - sau chuyến**.
+
+  4. Bổ sung giá/ước lượng, thông tin Driver/Vehicle, theo dõi vị trí, chia sẻ hành trình, hỗ trợ/khiếu nại và audit.
+
+  5. Mở rộng FR và bổ sung các capability vận hành.
+
+  6. Bổ sung các ma trận BA phù hợp: Stakeholder, Business Goal, Requirement, Risk và Use Case.
+
+  7. Làm rõ timeout, retry, chống tạo trùng, lock Ride, phân quyền và callback thanh toán.
+
+  8. Tách rõ quy tắc **giả định của CAB SYSTEM** khỏi các tính năng tham chiếu từ Grab.
+
+
+  ### 12.3. Ghi chú nguồn tham chiếu
+
+
+  Các điểm tham chiếu được đối chiếu với thông tin công khai từ Grab Vietnam về các dịch vụ di chuyển, đặt xe, giá/ước lượng,
+  thông tin tài xế, chia sẻ hành trình, GrabNow và xác nhận thanh toán. CAB SYSTEM sử dụng các điểm này làm **benchmark nghiệp
+  vụ**, không khẳng định sao chép thuật toán nội bộ của Grab.'
+reference_notes: 'CAB SYSTEM được xây dựng theo hướng benchmark trải nghiệm gọi xe hiện hành của Grab Vietnam: hệ thống có
+  nhiều dịch vụ di chuyển 2 bánh/4 bánh; người dùng chọn điểm đến để nhận thông tin ước lượng về giá; sau khi ghép chuyến
+  có thông tin tài xế/phương tiện; có theo dõi/chia sẻ hành trình; và có các luồng thanh toán, xác nhận thanh toán và đánh
+  giá.
+
+
+  Các số liệu và business rules cụ thể trong tài liệu (ví dụ bán kính 5 km, timeout 30 giây, tối đa 3 phút) là **giả định
+  để đặc tả CAB SYSTEM**, cần được Product Owner/Business Owner xác nhận khi triển khai thực tế.'
