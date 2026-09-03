@@ -1,1 +1,1284 @@
+openapi: 3.0.3
+info:
+  title: CAB SYSTEM API
+  description: API đặt chuyến, điều phối tài xế, thanh toán và đánh giá theo SRS CAB SYSTEM.
+  version: 1.0.0
+servers:
+  - url: https://api.cabsystem.example.com/v1
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: Đăng ký và đăng nhập
+  - name: Users
+    description: Hồ sơ người dùng
+  - name: Drivers
+    description: Hồ sơ, trạng thái và phản hồi chuyến của tài xế
+  - name: Rides
+    description: Đặt, theo dõi, cập nhật và hủy chuyến
+  - name: Driver Requests
+    description: Phân công và phản hồi yêu cầu chuyến
+  - name: Payments
+    description: Thanh toán tiền mặt và trực tuyến
+  - name: Ratings
+    description: Đánh giá sau chuyến
+  - name: Operations
+    description: Theo dõi chuyến và ghi nhận sự cố
+
+paths:
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Đăng ký tài khoản
+      operationId: registerUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Tạo tài khoản thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Số điện thoại đã được đăng ký
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Đăng nhập
+      operationId: loginUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Thông tin đăng nhập không đúng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Xem hồ sơ người dùng
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Trả về hồ sơ thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    patch:
+      tags: [Users]
+      summary: Cập nhật hồ sơ người dùng
+      operationId: updateCurrentUser
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Cập nhật hồ sơ thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Số điện thoại mới đã được sử dụng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /drivers/me:
+    put:
+      tags: [Drivers]
+      summary: Cập nhật hồ sơ và phương tiện tài xế
+      operationId: updateDriverProfile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverProfileRequest'
+      responses:
+        '200':
+          description: Cập nhật hồ sơ tài xế thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Biển số đã thuộc về tài xế khác
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /drivers/me/availability:
+    patch:
+      tags: [Drivers]
+      summary: Cập nhật trạng thái sẵn sàng và vị trí tài xế
+      operationId: updateDriverAvailability
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverAvailabilityRequest'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverAvailability'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Không thể chuyển sang trạng thái yêu cầu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /rides/estimate:
+    post:
+      tags: [Rides]
+      summary: Tính giá và thông tin chuyến dự kiến
+      operationId: estimateRide
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RideEstimateRequest'
+      responses:
+        '200':
+          description: Tính giá dự kiến thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RideEstimate'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /rides:
+    post:
+      tags: [Rides]
+      summary: Tạo chuyến và bắt đầu tìm tài xế
+      operationId: createRide
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRideRequest'
+      responses:
+        '201':
+          description: Tạo chuyến thành công và chuyển sang SEARCHING_DRIVER
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ride'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Yêu cầu trùng hoặc khách đang có chuyến hoạt động
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags: [Rides]
+      summary: Xem lịch sử chuyến của khách hàng
+      operationId: listCustomerRides
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RideStatusFilter'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Danh sách chuyến thuộc khách hàng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RideList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /rides/{ride_id}:
+    get:
+      tags: [Rides]
+      summary: Xem chi tiết và theo dõi chuyến
+      operationId: getRide
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+      responses:
+        '200':
+          description: Trạng thái mới nhất của chuyến
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ride'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Không có quyền xem chuyến
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /rides/{ride_id}/driver-requests:
+    post:
+      tags: [Driver Requests]
+      summary: Gửi yêu cầu chuyến cho tài xế phù hợp
+      operationId: sendDriverRequests
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+      responses:
+        '202':
+          description: Đã gửi yêu cầu theo thứ tự phù hợp
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverRequestDispatch'
+        '409':
+          description: Chuyến không ở trạng thái tìm tài xế
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /driver-requests/{request_id}/respond:
+    post:
+      tags: [Driver Requests]
+      summary: Tài xế nhận hoặc từ chối yêu cầu chuyến
+      operationId: respondToDriverRequest
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverRequestResponse'
+      responses:
+        '200':
+          description: Phản hồi được xử lý
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverRequestResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Yêu cầu đã hết hạn hoặc chuyến đã có tài xế
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /rides/{ride_id}/status:
+    patch:
+      tags: [Rides]
+      summary: Cập nhật trạng thái chuyến
+      operationId: updateRideStatus
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RideStatusRequest'
+      responses:
+        '200':
+          description: Cập nhật trạng thái hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RideStatusResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Chuyển trạng thái không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /rides/{ride_id}/cancel:
+    post:
+      tags: [Rides]
+      summary: Hủy chuyến
+      operationId: cancelRide
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelRideRequest'
+      responses:
+        '200':
+          description: Hủy chuyến thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelledRide'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Không thể hủy chuyến ở trạng thái hiện tại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /rides/{ride_id}/payments:
+    post:
+      tags: [Payments]
+      summary: Tạo thanh toán cho chuyến hoàn tất
+      operationId: createPayment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+      responses:
+        '201':
+          description: Tạo yêu cầu thanh toán thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Đã có giao dịch hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /payments/{payment_id}/cash-confirmation:
+    post:
+      tags: [Payments]
+      summary: Xác nhận đã thu tiền mặt
+      operationId: confirmCashPayment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PaymentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashConfirmationRequest'
+      responses:
+        '200':
+          description: Xác nhận thu tiền thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Giao dịch đã hoàn tất hoặc số tiền không khớp
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /payments/callback:
+    post:
+      tags: [Payments]
+      summary: Callback kết quả thanh toán trực tuyến
+      operationId: paymentCallback
+      security: []
+      parameters:
+        - in: header
+          name: X-Payment-Signature
+          required: true
+          schema:
+            type: string
+          description: Chữ ký do đối tác thanh toán cung cấp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCallbackRequest'
+      responses:
+        '200':
+          description: Callback hợp lệ và được ghi nhận
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Callback trùng hoặc số tiền không khớp
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /rides/{ride_id}/rating:
+    post:
+      tags: [Ratings]
+      summary: Đánh giá tài xế sau chuyến
+      operationId: rateDriver
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingRequest'
+      responses:
+        '201':
+          description: Lưu đánh giá thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rating'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Chuyến đã được đánh giá
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /operations/rides/active:
+    get:
+      tags: [Operations]
+      summary: Xem danh sách chuyến đang vận hành
+      operationId: listActiveRides
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          required: false
+          schema:
+            type: string
+            enum: [SEARCHING_DRIVER, DRIVER_ASSIGNED, DRIVER_ARRIVING, IN_PROGRESS]
+        - $ref: '#/components/parameters/Page'
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Danh sách chuyến đang hoạt động
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RideList'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /operations/incidents:
+    post:
+      tags: [Operations]
+      summary: Ghi nhận sự cố chuyến đi
+      operationId: createIncident
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncidentRequest'
+      responses:
+        '201':
+          description: Ghi nhận sự cố thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Incident'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    RideId:
+      name: ride_id
+      in: path
+      required: true
+      description: Mã chuyến
+      schema:
+        type: integer
+        format: int64
+        example: 3001
+    RequestId:
+      name: request_id
+      in: path
+      required: true
+      description: Mã yêu cầu tài xế
+      schema:
+        type: integer
+        format: int64
+        example: 7001
+    PaymentId:
+      name: payment_id
+      in: path
+      required: true
+      description: Mã giao dịch
+      schema:
+        type: integer
+        format: int64
+        example: 8001
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Khóa duy nhất chống tạo chuyến hoặc giao dịch trùng
+      schema:
+        type: string
+        example: req-20260903-0001
+    RideStatusFilter:
+      name: status
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/RideStatus'
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+
+  responses:
+    Unauthorized:
+      description: Chưa xác thực hoặc token không hợp lệ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Không có quyền thực hiện thao tác
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Không tìm thấy tài nguyên
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ValidationError:
+      description: Dữ liệu không hợp lệ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: Dữ liệu gửi lên không hợp lệ
+        details:
+          type: object
+          additionalProperties: true
+
+    User:
+      type: object
+      required: [user_id, full_name, phone, role, status]
+      properties:
+        user_id:
+          type: integer
+          example: 101
+        full_name:
+          type: string
+          example: Nguyen Van An
+        phone:
+          type: string
+          example: '0901234567'
+        role:
+          type: string
+          enum: [CUSTOMER, DRIVER, OPERATIONS, ADMIN]
+          example: CUSTOMER
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, LOCKED]
+          example: ACTIVE
+
+    RegisterRequest:
+      type: object
+      required: [full_name, phone, password, role]
+      properties:
+        full_name:
+          type: string
+          example: Nguyen Van An
+        phone:
+          type: string
+          example: '0901234567'
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: StrongPassword123
+        role:
+          type: string
+          enum: [CUSTOMER, DRIVER]
+          example: CUSTOMER
+
+    LoginRequest:
+      type: object
+      required: [phone, password]
+      properties:
+        phone:
+          type: string
+          example: '0901234567'
+        password:
+          type: string
+          format: password
+          example: StrongPassword123
+
+    LoginResponse:
+      type: object
+      required: [access_token, token_type, expires_in, user]
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiJ9.example
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          example: 3600
+        user:
+          $ref: '#/components/schemas/User'
+
+    UpdateUserRequest:
+      type: object
+      minProperties: 1
+      properties:
+        full_name:
+          type: string
+          example: Nguyen Van B
+        phone:
+          type: string
+          example: '0901234567'
+
+    DriverProfileRequest:
+      type: object
+      required: [vehicle_type, license_plate]
+      properties:
+        vehicle_type:
+          $ref: '#/components/schemas/VehicleType'
+        license_plate:
+          type: string
+          example: 51A-123.45
+
+    Driver:
+      type: object
+      required: [driver_id, user_id, vehicle_type, license_plate, rating, availability_status]
+      properties:
+        driver_id:
+          type: integer
+          example: 201
+        user_id:
+          type: integer
+          example: 102
+        full_name:
+          type: string
+          example: Tran Van Driver
+        phone:
+          type: string
+          example: '0912345678'
+        vehicle_type:
+          $ref: '#/components/schemas/VehicleType'
+        license_plate:
+          type: string
+          example: 51A-123.45
+        rating:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+          example: 4.8
+        availability_status:
+          $ref: '#/components/schemas/AvailabilityStatus'
+
+    DriverAvailabilityRequest:
+      type: object
+      required: [availability_status, current_latitude, current_longitude]
+      properties:
+        availability_status:
+          $ref: '#/components/schemas/AvailabilityStatus'
+        current_latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          example: 10.7769
+        current_longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          example: 106.7009
+
+    DriverAvailability:
+      allOf:
+        - $ref: '#/components/schemas/DriverAvailabilityRequest'
+        - type: object
+          required: [driver_id]
+          properties:
+            driver_id:
+              type: integer
+              example: 201
+
+    Location:
+      type: object
+      required: [address, latitude, longitude]
+      properties:
+        address:
+          type: string
+          example: 1 Nguyen Hue, District 1
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          example: 10.7743
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          example: 106.704
+
+    VehicleType:
+      type: string
+      enum: [BIKE, CAR]
+
+    PaymentMethod:
+      type: string
+      enum: [CASH, ONLINE]
+
+    RideStatus:
+      type: string
+      enum: [SEARCHING_DRIVER, DRIVER_ASSIGNED, DRIVER_ARRIVING, IN_PROGRESS, COMPLETED, CANCELLED, NO_DRIVER]
+
+    AvailabilityStatus:
+      type: string
+      enum: [AVAILABLE, OFFLINE, BUSY]
+
+    RideEstimateRequest:
+      type: object
+      required: [pickup, destination, vehicle_type]
+      properties:
+        pickup:
+          $ref: '#/components/schemas/Location'
+        destination:
+          $ref: '#/components/schemas/Location'
+        vehicle_type:
+          $ref: '#/components/schemas/VehicleType'
+
+    RideEstimate:
+      type: object
+      required: [distance_km, estimated_duration_minutes, estimated_fare, currency]
+      properties:
+        distance_km:
+          type: number
+          format: double
+          example: 7.2
+        estimated_duration_minutes:
+          type: integer
+          example: 25
+        estimated_fare:
+          type: number
+          format: double
+          example: 95000
+        currency:
+          type: string
+          example: VND
+
+    CreateRideRequest:
+      allOf:
+        - $ref: '#/components/schemas/RideEstimateRequest'
+        - type: object
+          required: [request_id, payment_method]
+          properties:
+            request_id:
+              type: string
+              example: req-20260903-0001
+            payment_method:
+              $ref: '#/components/schemas/PaymentMethod'
+            prefer_high_rating_driver:
+              type: boolean
+              default: false
+              example: true
+
+    Ride:
+      type: object
+      required: [ride_id, customer_id, pickup, destination, vehicle_type, status, estimated_fare, created_at]
+      properties:
+        ride_id:
+          type: integer
+          example: 3001
+        customer_id:
+          type: integer
+          example: 101
+        driver:
+          $ref: '#/components/schemas/Driver'
+        pickup:
+          $ref: '#/components/schemas/Location'
+        destination:
+          $ref: '#/components/schemas/Location'
+        vehicle_type:
+          $ref: '#/components/schemas/VehicleType'
+        status:
+          $ref: '#/components/schemas/RideStatus'
+        estimated_fare:
+          type: number
+          format: double
+          example: 95000
+        final_fare:
+          type: number
+          format: double
+          nullable: true
+          example: 102000
+        driver_location:
+          $ref: '#/components/schemas/Coordinates'
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-09-03T10:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2026-09-03T10:20:00Z'
+
+    Coordinates:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+          example: 10.78
+        longitude:
+          type: number
+          format: double
+          example: 106.702
+
+    RideList:
+      type: object
+      required: [page, limit, total, items]
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 1
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ride'
+
+    DriverRequestDispatch:
+      type: object
+      required: [ride_id, search_radius_km, request_timeout_seconds, requests_sent]
+      properties:
+        ride_id:
+          type: integer
+          example: 3001
+        search_radius_km:
+          type: number
+          example: 5
+        request_timeout_seconds:
+          type: integer
+          example: 30
+        requests_sent:
+          type: array
+          items:
+            type: object
+            required: [request_id, driver_id, status, expires_at]
+            properties:
+              request_id:
+                type: integer
+                example: 7001
+              driver_id:
+                type: integer
+                example: 201
+              status:
+                type: string
+                enum: [SENT, ACCEPTED, DECLINED, EXPIRED]
+                example: SENT
+              expires_at:
+                type: string
+                format: date-time
+                example: '2026-09-03T10:00:30Z'
+
+    DriverRequestResponse:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [ACCEPTED, DECLINED]
+          example: ACCEPTED
+
+    DriverRequestResult:
+      type: object
+      required: [request_id, decision, ride_id]
+      properties:
+        request_id:
+          type: integer
+          example: 7001
+        decision:
+          type: string
+          enum: [ACCEPTED, DECLINED]
+          example: ACCEPTED
+        ride_id:
+          type: integer
+          example: 3001
+        ride_status:
+          $ref: '#/components/schemas/RideStatus'
+        driver_availability_status:
+          $ref: '#/components/schemas/AvailabilityStatus'
+
+    RideStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [DRIVER_ARRIVING, IN_PROGRESS, COMPLETED]
+          example: DRIVER_ARRIVING
+        final_fare:
+          type: number
+          format: double
+          description: Bắt buộc khi chuyển sang COMPLETED
+          example: 102000
+        actual_distance_km:
+          type: number
+          format: double
+          description: Bắt buộc khi chuyển sang COMPLETED
+          example: 7.8
+
+    RideStatusResult:
+      type: object
+      required: [ride_id, status, updated_at]
+      properties:
+        ride_id:
+          type: integer
+          example: 3001
+        previous_status:
+          $ref: '#/components/schemas/RideStatus'
+        status:
+          $ref: '#/components/schemas/RideStatus'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2026-09-03T10:05:00Z'
+
+    CancelRideRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          example: Thay đổi kế hoạch
+
+    CancelledRide:
+      type: object
+      required: [ride_id, status, cancellation_fee, cancelled_by]
+      properties:
+        ride_id:
+          type: integer
+          example: 3001
+        status:
+          type: string
+          enum: [CANCELLED, NO_DRIVER]
+          example: CANCELLED
+        cancellation_fee:
+          type: number
+          format: double
+          example: 0
+        cancelled_by:
+          type: string
+          enum: [CUSTOMER, DRIVER, SYSTEM]
+          example: CUSTOMER
+
+    CreatePaymentRequest:
+      type: object
+      required: [method, request_id]
+      properties:
+        method:
+          $ref: '#/components/schemas/PaymentMethod'
+        request_id:
+          type: string
+          example: pay-20260903-0001
+
+    Payment:
+      type: object
+      required: [payment_id, ride_id, method, status, amount]
+      properties:
+        payment_id:
+          type: integer
+          example: 8001
+        ride_id:
+          type: integer
+          example: 3001
+        method:
+          $ref: '#/components/schemas/PaymentMethod'
+        status:
+          type: string
+          enum: [CASH_PENDING, PENDING, PAID, FAILED]
+          example: PENDING
+        amount:
+          type: number
+          format: double
+          example: 102000
+        provider_transaction_id:
+          type: string
+          nullable: true
+          example: gateway-tx-998877
+        checkout_url:
+          type: string
+          format: uri
+          nullable: true
+          example: https://payment.example.com/checkout/8001
+        paid_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-09-03T10:30:00Z'
+
+    CashConfirmationRequest:
+      type: object
+      required: [collected_amount]
+      properties:
+        collected_amount:
+          type: number
+          format: double
+          example: 102000
+
+    PaymentCallbackRequest:
+      type: object
+      required: [provider_transaction_id, payment_id, result_code, amount, signature]
+      properties:
+        provider_transaction_id:
+          type: string
+          example: gateway-tx-998877
+        payment_id:
+          type: integer
+          example: 8001
+        result_code:
+          type: string
+          enum: [SUCCESS, FAILED]
+          example: SUCCESS
+        amount:
+          type: number
+          format: double
+          example: 102000
+        signature:
+          type: string
+          description: Chữ ký trong payload để đối chiếu với header
+          example: valid-provider-signature
+
+    RatingRequest:
+      type: object
+      required: [score]
+      properties:
+        score:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+        comment:
+          type: string
+          example: Tài xế thân thiện và đúng giờ
+
+    Rating:
+      allOf:
+        - $ref: '#/components/schemas/RatingRequest'
+        - type: object
+          required: [rating_id, ride_id, driver_id]
+          properties:
+            rating_id:
+              type: integer
+              example: 9001
+            ride_id:
+              type: integer
+              example: 3001
+            driver_id:
+              type: integer
+              example: 201
+
+    IncidentRequest:
+      type: object
+      required: [ride_id, incident_type, description]
+      properties:
+        ride_id:
+          type: integer
+          example: 3001
+        incident_type:
+          type: string
+          enum: [SAFETY, PAYMENT, DRIVER, CUSTOMER, TECHNICAL, OTHER]
+          example: TECHNICAL
+        description:
+          type: string
+          example: Ứng dụng mất kết nối khi đang theo dõi chuyến
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+          default: MEDIUM
+          example: MEDIUM
+
+    Incident:
+      allOf:
+        - $ref: '#/components/schemas/IncidentRequest'
+        - type: object
+          required: [incident_id, status, created_at]
+          properties:
+            incident_id:
+              type: integer
+              example: 10001
+            status:
+              type: string
+              enum: [OPEN, IN_PROGRESS, RESOLVED, CLOSED]
+              example: OPEN
+            created_at:
+              type: string
+              format: date-time
+              example: '2026-09-03T10:25:00Z'
 
