@@ -1,0 +1,16 @@
+## **TC03 - drivers**
+
+| **Test Case ID** | **Test Scenario** | **Test Case** | **Preconditions** | **Test Steps** | **Test Data** | **Expected Result** | **Priority** |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| TC-DRV-001 | Driver profile management | Update profile with `CAR` and a valid license plate | Logged in as a Driver | 1. Send `PUT /drivers/me`.<br>2. Check the response. | `{ "vehicle_type":"CAR", "license_plate":"51A-123.45" }` | HTTP `200`.<br>Driver information is updated. | High |
+| TC-DRV-002 | Driver profile management | Update profile with `BIKE` | Logged in as a Driver | 1. Send PUT.<br>2. Check the response. | `{ "vehicle_type":"BIKE", "license_plate":"59X1-123.45" }` | HTTP `200`.<br>`vehicle_type=BIKE`. | High |
+| TC-DRV-003 | Driver profile management | Non-Driver calls the API | Logged in as a Customer | 1. Call `PUT /drivers/me`.<br>2. Check the response. | Valid payload | HTTP `403 Forbidden`.<br>Error indicates that the user does not have the Driver role. | High |
+| TC-DRV-004 | Driver profile management | Use a license plate owned by another Driver | Another Driver already owns `51A-123.45` | 1. Send PUT.<br>2. Use the duplicate license plate. | `vehicle_type=CAR`, `license_plate=51A-123.45` | HTTP `409 Conflict`.<br>Profile is not changed. | High |
+| TC-DRV-005 | Availability management | Change Driver to `AVAILABLE` with valid coordinates | Driver has no active Ride | 1. Send the availability PATCH.<br>2. Check the response. | `{ "availability_status":"AVAILABLE", "current_latitude":10.7769, "current_longitude":106.7009 }` | HTTP `200`.<br>Status and location are updated. | High |
+| TC-DRV-006 | Availability management | Update coordinates at valid boundary values | Logged in as a Driver | 1. PATCH availability.<br>2. Check the response. | Latitude `90`; longitude `180` | HTTP `200`.<br>Coordinates are accepted. | Medium |
+| TC-DRV-007 | Availability management | Latitude exceeds the limit | Logged in as a Driver | 1. Send PATCH.<br>2. Check the response. | Latitude `91`; longitude `106.7` | HTTP `400`.<br>Error `INVALID_LOCATION` or equivalent. | High |
+| TC-DRV-008 | Availability management | Longitude exceeds the limit | Logged in as a Driver | 1. Send PATCH.<br>2. Check the response. | Latitude `10.7`; longitude `181` | HTTP `400`.<br>Location is not updated. | High |
+| TC-DRV-009 | Availability management | Status is not in the enum | Logged in as a Driver | 1. Send PATCH.<br>2. Check the response. | `availability_status="ONLINE"` | HTTP `400`.<br>Status is rejected. | High |
+| TC-DRV-010 | Availability management | Driver with an active Ride tries to change status | Driver is `BUSY` with an active Ride | 1. Send the availability PATCH.<br>2. Change status to `AVAILABLE`. | `status=AVAILABLE` | HTTP `409 Conflict`.<br>Driver cannot become `AVAILABLE` while an active Ride exists. | High |
+| TC-DRV-011 | Availability management | Customer calls the availability API | Logged in as a Customer | 1. Send PATCH.<br>2. Check the response. | Valid availability payload | HTTP `403 Forbidden`. | High |
+| TC-DRV-012 | Validation | Required field is missing | Logged in as a Driver | 1. Send PATCH.<br>2. Remove `current_longitude`. | `{ "availability_status":"AVAILABLE", "current_latitude":10.7769 }` | Request is rejected because a required field is missing. | High |
