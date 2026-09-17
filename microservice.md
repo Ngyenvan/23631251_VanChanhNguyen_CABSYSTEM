@@ -1,588 +1,407 @@
-# THIẾT KẾ MICRO-SERVICE – CAB SYSTEM
+# THIẾT KẾ MICROSERVICE HỆ THỐNG CAB
 
-# 1. Phân tách Use Case theo miền nghiệp vụ
+## 1. Kiến trúc Microservice
 
-## 1.1. Các Actor của hệ thống
+Hệ thống CAB được phân rã thành các Microservice dựa trên ranh giới nghiệp vụ. Mỗi Microservice chịu trách nhiệm cho một nhóm nghiệp vụ có tính liên kết cao, sở hữu dữ liệu thuộc phạm vi của mình và cung cấp các API cần thiết cho các thành phần khác.
 
-Theo `srs.md`, hệ thống có các Actor chính:
+Việc phân rã không thực hiện theo từng API riêng lẻ mà dựa trên **business capability và vòng đời của đối tượng nghiệp vụ**. Các API có cùng trách nhiệm nghiệp vụ được đặt trong cùng một Microservice.
 
-| Mã  | Actor                | Vai trò                                                    |
-| --- | -------------------- | ---------------------------------------------------------- |
-| A01 | Customer             | Đặt chuyến, theo dõi, thanh toán, đánh giá                 |
-| A02 | Driver               | Cập nhật trạng thái, nhận/từ chối chuyến, thực hiện chuyến |
-| A03 | Operations Staff     | Theo dõi chuyến, xử lý sự cố                               |
-| A04 | System Administrator | Quản lý tài khoản, cấu hình và báo cáo                     |
-| A05 | Payment Gateway      | Xử lý thanh toán trực tuyến                                |
-| A06 | Map/Location Service | Cung cấp tọa độ, khoảng cách, định tuyến                   |
+Các Microservice được xác định từ phạm vi nghiệp vụ của hệ thống gồm:
 
----
+| STT | Microservice               | Bounded Context   | Trách nhiệm chính                          |
+| --: | -------------------------- | ----------------- | ------------------------------------------ |
+|   1 | **Auth Service**           | Identity & Access | Đăng ký và đăng nhập người dùng            |
+|   2 | **User Service**           | User Profile      | Quản lý thông tin người dùng               |
+|   3 | **Driver Service**         | Driver Management | Quản lý thông tin tài xế                   |
+|   4 | **Ride Service**           | Ride Management   | Quản lý yêu cầu và vòng đời chuyến         |
+|   5 | **Driver Request Service** | Driver Dispatch   | Quản lý việc gửi yêu cầu chuyến đến tài xế |
+|   6 | **Payment Service**        | Payment           | Quản lý thanh toán của chuyến              |
+|   7 | **Rating Service**         | Rating            | Quản lý đánh giá sau chuyến                |
+|   8 | **Operations Service**     | Operations        | Theo dõi chuyến và xử lý sự cố             |
 
-## 1.2. Danh sách Use Case
-
-| Mã   | Use Case                      | Actor chính              | Miền nghiệp vụ |
-| ---- | ----------------------------- | ------------------------ | -------------- |
-| UC01 | Đặt chuyến                    | Customer                 | Ride           |
-| UC02 | Tìm và nhận chuyến            | Driver/System            | Dispatch       |
-| UC03 | Theo dõi chuyến               | Customer, Driver         | Ride           |
-| UC04 | Thực hiện và hoàn tất chuyến  | Driver                   | Ride           |
-| UC05 | Thanh toán chuyến             | Customer/Payment Gateway | Payment        |
-| UC06 | Hủy chuyến                    | Customer/Driver          | Ride           |
-| UC07 | Đánh giá tài xế               | Customer                 | Rating         |
-| UC08 | Quản lý tài khoản và cấu hình | Administrator            | Identity/User  |
-| UC09 | Hỗ trợ và xử lý sự cố         | Operations               | Operations     |
+Ngoài các Microservice nội bộ, hệ thống có các hệ thống bên ngoài được repo xác định gồm **Payment Gateway** và **Map/Location Service**.
 
 ---
 
-## 1.3. Phân chia miền nghiệp vụ
+# 2. Nguyên tắc phân tách
 
-Từ Use Case và API hiện có, có thể chia hệ thống thành các miền:
+Mỗi Microservice phải đáp ứng các nguyên tắc sau:
 
-### Identity & Access
+### 2.1. Single Business Responsibility
 
-Phụ trách:
+Một Microservice chỉ chịu trách nhiệm cho một phạm vi nghiệp vụ rõ ràng.
 
-* Đăng ký tài khoản
-* Đăng nhập
-* JWT
-* Role
-* Trạng thái tài khoản
+Ví dụ:
 
-API:
+* Auth Service chỉ xử lý xác thực.
+* User Service chỉ xử lý hồ sơ người dùng.
+* Ride Service xử lý vòng đời Ride.
+* Payment Service xử lý giao dịch thanh toán.
+* Rating Service xử lý đánh giá.
+
+Auth Service không xử lý hồ sơ người dùng và Ride Service không xử lý thanh toán.
+
+### 2.2. Data Ownership
+
+Mỗi Microservice sở hữu dữ liệu thuộc nghiệp vụ của mình.
+
+Microservice khác không truy cập trực tiếp Database của Service đó.
+
+Ví dụ:
 
 ```text
-POST /auth/register
-POST /auth/login
+Ride Service
+    │
+    └── ride_db
+
+Payment Service
+    │
+    └── payment_db
 ```
 
----
+Payment Service không truy cập trực tiếp `ride_db` để thay đổi trạng thái Ride.
 
-### User Management
+### 2.3. API-based Communication
 
-Phụ trách thông tin người dùng:
+Các Microservice trao đổi thông tin thông qua API được cung cấp bởi Service sở hữu nghiệp vụ.
+
+Ví dụ:
 
 ```text
-GET   /users/me
-PATCH /users/me
+Ride Service
+      │
+      │ request driver
+      ▼
+Driver Request Service
 ```
 
-Các thông tin chính:
+Ride Service không truy cập trực tiếp bảng `driver_requests`.
 
-* user_id
-* full_name
-* phone
-* role
-* status
+### 2.4. Business Boundary
 
----
+Ranh giới Service được xác định theo **trách nhiệm nghiệp vụ**, không phải theo số lượng bảng hoặc số lượng endpoint.
 
-### Driver Management
-
-Phụ trách:
-
-* Hồ sơ Driver
-* Phương tiện
-* Trạng thái sẵn sàng
-* Vị trí hiện tại
-
-API:
+Do đó:
 
 ```text
-PUT   /drivers/me
-PATCH /drivers/me/availability
-```
-
----
-
-### Ride Management
-
-Đây là miền nghiệp vụ trung tâm:
-
-```text
-POST /rides/estimate
 POST /rides
-GET  /rides
-GET  /rides/{ride_id}
+GET /rides
+GET /rides/{ride_id}
 PATCH /rides/{ride_id}/status
 POST /rides/{ride_id}/cancel
 ```
 
-Phụ trách:
-
-* Điểm đón
-* Điểm đến
-* Loại xe
-* Giá dự kiến
-* Giá cuối
-* Trạng thái chuyến
-* Hủy chuyến
-* Lịch sử chuyến
+được giữ trong **Ride Service** vì đều liên quan đến vòng đời của một Ride.
 
 ---
 
-### Driver Dispatch
+# 3. Auth Service
 
-Phụ trách quá trình tìm và phân công tài xế:
+## 3.1. Bounded Context
+
+**Identity & Access**
+
+## 3.2. Business Responsibility
+
+Auth Service chịu trách nhiệm xác thực người dùng và cấp thông tin xác thực để người dùng truy cập các chức năng của hệ thống.
+
+## 3.3. API
+
+| Method | Endpoint         | Chức năng         |
+| ------ | ---------------- | ----------------- |
+| POST   | `/auth/register` | Đăng ký tài khoản |
+| POST   | `/auth/login`    | Đăng nhập         |
+
+Các API nghiệp vụ sử dụng Bearer Token/JWT để xác thực người dùng.
+
+## 3.4. Data Ownership
 
 ```text
-POST /rides/{ride_id}/driver-requests
-POST /driver-requests/{request_id}/respond
+auth_db
+└── User authentication information
 ```
 
-Các nghiệp vụ quan trọng:
+Auth Service sở hữu thông tin phục vụ xác thực.
 
-* Tìm Driver trong bán kính 5 km
-* Lọc theo loại xe
-* Ưu tiên Driver có rating cao nếu Customer yêu cầu
-* Gửi request
-* Driver nhận/từ chối
-* Request hết hạn sau 30 giây
-* Tối đa khoảng 3 phút tìm Driver
+## 3.5. Không thuộc trách nhiệm
+
+Auth Service không xử lý:
+
+* Tạo Ride.
+* Quản lý trạng thái Ride.
+* Thông tin chuyến.
+* Thanh toán.
+* Đánh giá.
 
 ---
 
-### Payment
+# 4. User Service
 
-Phụ trách:
+## 4.1. Bounded Context
 
-* Thanh toán CASH
-* Thanh toán ONLINE
-* Cash confirmation
-* Payment Gateway callback
-* Idempotency
+**User Profile**
 
-API:
+## 4.2. Business Responsibility
+
+User Service quản lý thông tin hồ sơ của người dùng đã đăng nhập.
+
+## 4.3. API
+
+| Method | Endpoint    | Chức năng                              |
+| ------ | ----------- | -------------------------------------- |
+| GET    | `/users/me` | Xem thông tin người dùng hiện tại      |
+| PATCH  | `/users/me` | Cập nhật thông tin người dùng hiện tại |
+
+## 4.4. Data Ownership
 
 ```text
-POST /rides/{ride_id}/payments
-POST /payments/{payment_id}/cash-confirmation
-POST /payments/callback
+user_db
+└── User Profile
 ```
+
+## 4.5. Ranh giới với Auth Service
+
+Hai Service có trách nhiệm khác nhau:
+
+```text
+Auth Service
+"Người dùng có xác thực hợp lệ không?"
+
+User Service
+"Thông tin hồ sơ của người dùng là gì?"
+```
+
+Auth Service không cập nhật trực tiếp Profile Database.
 
 ---
 
-### Rating
+# 5. Driver Service
 
-Phụ trách đánh giá Driver:
+## 5.1. Bounded Context
+
+**Driver Management**
+
+## 5.2. Business Responsibility
+
+Driver Service quản lý thông tin nghiệp vụ của tài xế và phương tiện thuộc hồ sơ tài xế.
+
+## 5.3. API
+
+| Method | Endpoint      | Chức năng                          |
+| ------ | ------------- | ---------------------------------- |
+| PATCH  | `/drivers/me` | Tài xế cập nhật thông tin của mình |
+
+## 5.4. Data Ownership
 
 ```text
-POST /rides/{ride_id}/rating
+driver_db
+├── Driver
+└── Vehicle
 ```
 
-Rule:
+## 5.5. Ranh giới
 
-* Ride phải `COMPLETED`
-* Customer phải là người đặt chuyến
-* Score từ 1 đến 5
-* Một Ride chỉ được Rating một lần
+Driver Service trả lời:
+
+> Tài xế là ai và thông tin tài xế/phương tiện là gì?
+
+Driver Service không chịu trách nhiệm:
+
+> Tài xế hiện có sẵn sàng nhận chuyến hay không?
+
+Thông tin trạng thái sẵn sàng được sử dụng trong quá trình Driver Request/Dispatch.
 
 ---
 
-### Operations
+# 6. Ride Service
 
-Phụ trách:
+## 6.1. Bounded Context
 
-```text
-GET  /operations/rides/active
-POST /operations/incidents
-```
+**Ride Management**
 
-Bao gồm:
+## 6.2. Business Responsibility
 
-* Theo dõi các chuyến đang hoạt động
-* Lọc theo trạng thái
-* Ghi nhận sự cố
-* Hỗ trợ vận hành
+Ride Service là Service quản lý đối tượng nghiệp vụ trung tâm `Ride`.
 
----
+Service chịu trách nhiệm:
 
-## 1.4. Sơ đồ phân tách Use Case
+* Tạo Ride.
+* Xem Ride.
+* Liệt kê Ride.
+* Cập nhật trạng thái Ride.
+* Hủy Ride.
+* Lưu thông tin điểm đón và điểm đến.
+* Lưu loại xe.
+* Lưu giá dự kiến và giá cuối.
 
-```mermaid
-flowchart TB
+## 6.3. API
 
-    Customer[Customer]
-    Driver[Driver]
-    Admin[Administrator]
-    Ops[Operations Staff]
-    Gateway[Payment Gateway]
-    Map[Map/Location Service]
+| Method | Endpoint                  | Chức năng           |
+| ------ | ------------------------- | ------------------- |
+| POST   | `/rides`                  | Tạo Ride            |
+| GET    | `/rides`                  | Danh sách Ride      |
+| GET    | `/rides/{ride_id}`        | Chi tiết Ride       |
+| PATCH  | `/rides/{ride_id}/status` | Cập nhật trạng thái |
+| POST   | `/rides/{ride_id}/cancel` | Hủy Ride            |
 
-    subgraph Identity["Identity & User"]
-        Auth["Authentication"]
-        User["User Management"]
-    end
-
-    subgraph Ride["Ride Management"]
-        Estimate["Fare Estimation"]
-        CreateRide["Create Ride"]
-        Tracking["Ride Tracking"]
-        Status["Ride Status"]
-        Cancel["Cancel Ride"]
-    end
-
-    subgraph Dispatch["Driver Dispatch"]
-        FindDriver["Find Driver"]
-        DriverRequest["Driver Request"]
-    end
-
-    subgraph DriverDomain["Driver Management"]
-        DriverProfile["Driver Profile"]
-        Availability["Availability & Location"]
-    end
-
-    subgraph Payment["Payment"]
-        CreatePayment["Create Payment"]
-        Cash["Cash Confirmation"]
-        Callback["Payment Callback"]
-    end
-
-    subgraph Rating["Rating"]
-        Rate["Rate Driver"]
-    end
-
-    subgraph Operations["Operations"]
-        Monitor["Monitor Active Rides"]
-        Incident["Incident Management"]
-    end
-
-    Customer --> Auth
-    Customer --> User
-    Customer --> Estimate
-    Customer --> CreateRide
-    Customer --> Tracking
-    Customer --> Cancel
-    Customer --> CreatePayment
-    Customer --> Rate
-
-    Driver --> Auth
-    Driver --> DriverProfile
-    Driver --> Availability
-    Driver --> DriverRequest
-    Driver --> Status
-    Driver --> Cancel
-    Driver --> Cash
-
-    Admin --> User
-    Ops --> Monitor
-    Ops --> Incident
-
-    Gateway --> Callback
-    Map --> Estimate
-```
-
----
-
-# 2. Ubiquitous Language
-
-Các thuật ngữ dùng thống nhất trong toàn hệ thống:
-
-| Thuật ngữ           | Ý nghĩa                                 |
-| ------------------- | --------------------------------------- |
-| User                | Tài khoản người dùng                    |
-| Customer            | Người đặt chuyến                        |
-| Driver              | Tài xế                                  |
-| Ride                | Một chuyến đi                           |
-| Pickup              | Điểm đón                                |
-| Destination         | Điểm đến                                |
-| Vehicle             | Phương tiện                             |
-| Vehicle Type        | Loại phương tiện `BIKE` hoặc `CAR`      |
-| Driver Request      | Yêu cầu chuyến gửi đến một Driver       |
-| Availability Status | Trạng thái sẵn sàng của Driver          |
-| Ride Status         | Trạng thái hiện tại của Ride            |
-| Estimated Fare      | Giá dự kiến                             |
-| Final Fare          | Giá cuối cùng                           |
-| Payment             | Giao dịch thanh toán                    |
-| Cash Pending        | Trạng thái chờ Driver xác nhận tiền mặt |
-| Payment Gateway     | Đối tác xử lý thanh toán online         |
-| Rating              | Đánh giá Customer dành cho Driver       |
-| Incident            | Sự cố của chuyến                        |
-| Idempotency-Key     | Khóa chống tạo dữ liệu trùng            |
-| Request ID          | Mã yêu cầu nghiệp vụ                    |
-| Callback            | Thông báo kết quả từ Payment Gateway    |
-
----
-
-# 3. Bounded Context và Context Map
-
-## 3.1. Các Bounded Context
-
-Từ các API hiện tại, đề xuất các Bounded Context:
-
-| Bounded Context    | Trách nhiệm                             |
-| ------------------ | --------------------------------------- |
-| Identity Context   | Authentication và quyền truy cập        |
-| User Context       | Hồ sơ User                              |
-| Driver Context     | Driver, Vehicle, availability, location |
-| Ride Context       | Vòng đời Ride                           |
-| Dispatch Context   | Tìm và phân công Driver                 |
-| Payment Context    | Payment và Payment Gateway              |
-| Rating Context     | Rating Driver                           |
-| Operations Context | Theo dõi và xử lý Incident              |
-
----
-
-## 3.2. Context Map
-
-```mermaid
-flowchart LR
-
-    Customer["Customer"]
-    Driver["Driver"]
-
-    Identity["Identity Context"]
-    User["User Context"]
-    DriverCtx["Driver Context"]
-    Ride["Ride Context"]
-    Dispatch["Dispatch Context"]
-    Payment["Payment Context"]
-    Rating["Rating Context"]
-    Operations["Operations Context"]
-
-    Map["Map/Location Service"]
-    Gateway["Payment Gateway"]
-
-    Customer --> Identity
-    Driver --> Identity
-
-    Identity --> User
-
-    Customer --> Ride
-    Ride --> Map
-
-    Ride --> Dispatch
-    Dispatch --> DriverCtx
-    Driver --> DriverCtx
-
-    Ride --> Payment
-    Payment --> Gateway
-
-    Ride --> Rating
-    Rating --> DriverCtx
-
-    Operations --> Ride
-    Operations --> DriverCtx
-```
-
----
-
-## 3.3. Luồng nghiệp vụ chính
-
-```mermaid
-sequenceDiagram
-
-    participant C as Customer
-    participant R as Ride Service
-    participant D as Dispatch Service
-    participant DR as Driver Service
-    participant P as Payment Service
-    participant G as Payment Gateway
-    participant RT as Rating Service
-
-    C->>R: Estimate Ride
-    R-->>C: Estimated Fare
-
-    C->>R: Create Ride
-    R-->>C: SEARCHING_DRIVER
-
-    R->>D: Find Driver
-    D->>DR: Get available Drivers
-    DR-->>D: Driver candidates
-
-    D->>DR: Send Driver Request
-    DR-->>D: Driver accepts
-
-    D->>R: Driver Assigned
-    R-->>C: DRIVER_ASSIGNED
-
-    DR->>R: Update Ride Status
-    R-->>C: IN_PROGRESS
-
-    DR->>R: Complete Ride
-    R-->>C: COMPLETED + Final Fare
-
-    C->>P: Create Payment
-    P->>G: Online Payment
-    G-->>P: Callback
-    P-->>C: PAID
-
-    C->>RT: Submit Rating
-    RT-->>C: Rating Created
-```
-
----
-
-# 4. Aggregate và Invariant
-
-## 4.1. Identity Aggregate
-
-### Aggregate Root
-
-```text
-User
-```
-
-### Thuộc tính chính
-
-```text
-user_id
-full_name
-phone
-role
-status
-```
-
-### Invariant
-
-* `phone` phải unique.
-* User phải có role hợp lệ.
-* User bị `LOCKED` không được sử dụng chức năng cần xác thực.
-* User không được tự thay đổi role.
-
----
-
-# 4.2. Driver Aggregate
-
-### Aggregate Root
-
-```text
-Driver
-```
-
-Bao gồm:
-
-```text
-Driver
- └── Vehicle
-```
-
-### Invariant
-
-* Driver phải liên kết với User.
-* `availability_status` thuộc:
-
-```text
-AVAILABLE
-OFFLINE
-BUSY
-```
-
-* `vehicle_type`:
-
-```text
-BIKE
-CAR
-```
-
-* Driver chỉ được nhận Ride khi phù hợp trạng thái.
-* Khi nhận Ride thành công, Driver chuyển sang trạng thái bận.
-
----
-
-# 4.3. Ride Aggregate
-
-### Aggregate Root
-
-```text
-Ride
-```
-
-Thông tin:
-
-```text
-ride_id
-customer_id
-pickup
-destination
-vehicle_type
-estimated_fare
-final_fare
-status
-created_at
-updated_at
-```
-
-### Ride Status
+## 6.4. Ride Lifecycle
 
 ```text
 SEARCHING_DRIVER
-        ↓
+       │
+       ▼
 DRIVER_ASSIGNED
-        ↓
+       │
+       ▼
 DRIVER_ARRIVING
-        ↓
+       │
+       ▼
 IN_PROGRESS
-        ↓
+       │
+       ▼
 COMPLETED
 ```
 
-Ngoài ra:
+Các trạng thái kết thúc:
 
 ```text
-SEARCHING_DRIVER → CANCELLED
-DRIVER_ASSIGNED  → CANCELLED
-SEARCHING_DRIVER → NO_DRIVER
+CANCELLED
+NO_DRIVER
 ```
 
-### Invariant
+Các trạng thái trên thuộc cùng vòng đời của `Ride`, do đó không tách thành các Microservice riêng.
 
-* Không tạo Ride nếu Customer đã có Ride đang hoạt động.
-* Pickup và Destination không được giống nhau.
-* Chỉ Driver được gán mới được cập nhật trạng thái chuyến.
-* Không được hoàn tất Ride chưa bắt đầu.
-* Ride `COMPLETED` không được chuyển ngược về trạng thái trước.
-* Không được hủy Ride đã `COMPLETED`.
+## 6.5. Data Ownership
+
+```text
+ride_db
+└── Ride
+```
+
+Ride Service sở hữu dữ liệu Ride.
+
+## 6.6. Ranh giới
+
+Ride Service quyết định:
+
+> Ride đang ở trạng thái nào?
+
+Ride Service không quyết định:
+
+> Tài xế nào được gửi yêu cầu?
+
+Việc này thuộc Driver Request Service.
 
 ---
 
-# 4.4. Driver Request Aggregate
+# 7. Fare Estimation
 
-### Aggregate Root
+## 7.1. Phạm vi
 
-```text
-DriverRequest
-```
-
-Thuộc tính:
+Repo có API:
 
 ```text
-request_id
-ride_id
-driver_id
-status
-sent_at
-responded_at
+POST /rides/estimate
 ```
 
-### Invariant
+API nhận:
 
-* Một Driver không nhận cùng một Ride nhiều lần.
-* Request có thời hạn 30 giây.
-* Request bị `DECLINED` hoặc `EXPIRED` không thể được chấp nhận lại.
-* Chỉ một Driver hợp lệ được gán cho một Ride.
+* Điểm đón.
+* Điểm đến.
+* Loại xe.
+
+và trả về:
+
+* Khoảng cách dự kiến.
+* Thời gian dự kiến.
+* Giá dự kiến.
+* Đơn vị tiền tệ.
+
+## 7.2. Vị trí trong kiến trúc
+
+Fare Estimation **không được tự động tách thành một Microservice độc lập chỉ vì nó có một endpoint riêng**.
+
+Nếu logic tính giá vẫn thuộc cùng phạm vi xử lý của Ride và repo không mô tả một vòng đời hoặc boundary độc lập cho Pricing, chức năng này được xem là **một capability bên trong Ride Service**.
+
+```text
+Ride Service
+├── Ride Management
+└── Fare Estimation
+```
+
+Cách này tránh tạo Microservice chỉ để "chia nhỏ cho nhiều".
 
 ---
 
-# 4.5. Payment Aggregate
+# 8. Driver Request Service
 
-### Aggregate Root
+## 8.1. Bounded Context
+
+**Driver Dispatch**
+
+## 8.2. Business Responsibility
+
+Driver Request Service chịu trách nhiệm quản lý quá trình gửi yêu cầu Ride đến tài xế và ghi nhận phản hồi của tài xế.
+
+## 8.3. API
+
+| Method | Endpoint                                | Chức năng                  |
+| ------ | --------------------------------------- | -------------------------- |
+| POST   | `/rides/{ride_id}/driver-requests`      | Tạo yêu cầu gửi đến tài xế |
+| POST   | `/driver-requests/{request_id}/respond` | Tài xế phản hồi yêu cầu    |
+
+## 8.4. Quy tắc nghiệp vụ
+
+Theo repo:
+
+* Chỉ tài xế `AVAILABLE` được xem xét.
+* Tài xế phải phù hợp loại xe.
+* Phạm vi tìm kiếm là bán kính 5 km.
+* Có thể ưu tiên tài xế có đánh giá cao khi Customer yêu cầu.
+* Khoảng cách được sử dụng trong thứ tự lựa chọn.
+* Một yêu cầu tài xế có thời gian phản hồi 30 giây.
+* Nếu tài xế từ chối hoặc hết hạn, hệ thống chuyển sang tài xế tiếp theo.
+* Khi tài xế nhận chuyến, Ride được khóa và tài xế chuyển sang trạng thái bận.
+
+## 8.5. Data Ownership
 
 ```text
-Payment
+driver_request_db
+└── DriverRequest
 ```
 
-Thuộc tính:
+`DriverRequest` lưu lại từng lần hệ thống gửi yêu cầu cho tài xế.
+
+---
+
+# 9. Payment Service
+
+## 9.1. Bounded Context
+
+**Payment**
+
+## 9.2. Business Responsibility
+
+Payment Service chịu trách nhiệm xử lý và lưu trạng thái thanh toán của Ride.
+
+## 9.3. API
+
+| Method | Endpoint                                   | Chức năng                       |
+| ------ | ------------------------------------------ | ------------------------------- |
+| POST   | `/rides/{ride_id}/payments`                | Tạo thanh toán                  |
+| POST   | `/payments/{payment_id}/cash-confirmation` | Xác nhận thanh toán tiền mặt    |
+| POST   | `/payments/callback`                       | Nhận kết quả từ Payment Gateway |
+
+## 9.4. Payment Method
+
+Repo hỗ trợ:
 
 ```text
-payment_id
-ride_id
-method
-status
-amount
-provider_transaction_id
-paid_at
+CASH
+ONLINE
 ```
 
-### Payment Status
+## 9.5. Payment Status
 
 ```text
 CASH_PENDING
@@ -591,538 +410,73 @@ PAID
 FAILED
 ```
 
-### Invariant
-
-* Ride phải `COMPLETED` trước khi tạo Payment.
-* Một Ride tối đa có một Payment hợp lệ.
-* Amount phải bằng Final Fare.
-* Callback phải có signature hợp lệ.
-* Callback trùng không được tạo Payment thứ hai.
-* Cash chỉ được xác nhận bởi Driver được gán.
-
----
-
-# 4.6. Rating Aggregate
-
-### Aggregate Root
-
-```text
-Rating
-```
-
-Thuộc tính:
-
-```text
-rating_id
-ride_id
-customer_id
-driver_id
-score
-comment
-created_at
-```
-
-### Invariant
-
-* Ride phải `COMPLETED`.
-* Customer phải là người đặt Ride.
-* Score chỉ từ 1 đến 5.
-* Một Ride chỉ được Rating một lần.
-
----
-
-# 5. Domain Event phát sinh từ Use Case
-
-Các Event dưới đây là **đề xuất Domain Event** để tách Microservice và giảm coupling.
-
-## 5.1. Ride Events
-
-| Event                 | Khi phát sinh               |
-| --------------------- | --------------------------- |
-| `RideCreated`         | Ride được tạo               |
-| `RideSearchingDriver` | Ride bắt đầu tìm Driver     |
-| `DriverAssigned`      | Một Driver được gán         |
-| `DriverArriving`      | Driver bắt đầu đến điểm đón |
-| `RideStarted`         | Chuyến bắt đầu              |
-| `RideCompleted`       | Chuyến hoàn tất             |
-| `RideCancelled`       | Ride bị hủy                 |
-| `NoDriverFound`       | Không tìm được Driver       |
-
----
-
-## 5.2. Dispatch Events
-
-| Event                   | Khi phát sinh            |
-| ----------------------- | ------------------------ |
-| `DriverRequestCreated`  | Gửi request cho Driver   |
-| `DriverRequestAccepted` | Driver nhận chuyến       |
-| `DriverRequestDeclined` | Driver từ chối           |
-| `DriverRequestExpired`  | Hết 30 giây              |
-| `DriverSearchTimeout`   | Hết thời gian tìm Driver |
-
----
-
-## 5.3. Payment Events
-
-| Event                     | Khi phát sinh         |
-| ------------------------- | --------------------- |
-| `PaymentCreated`          | Payment được tạo      |
-| `CashPaymentPending`      | Chờ xác nhận tiền mặt |
-| `PaymentPaid`             | Thanh toán thành công |
-| `PaymentFailed`           | Thanh toán thất bại   |
-| `PaymentCallbackReceived` | Gateway callback      |
-
----
-
-## 5.4. Rating Events
-
-| Event                 | Khi phát sinh                        |
-| --------------------- | ------------------------------------ |
-| `RatingSubmitted`     | Customer gửi Rating                  |
-| `DriverRatingUpdated` | Điểm trung bình Driver được cập nhật |
-
----
-
-## 5.5. Operations Events
-
-| Event             | Khi phát sinh                |
-| ----------------- | ---------------------------- |
-| `IncidentCreated` | Operations ghi nhận Incident |
-
----
-
-## 5.6. Event Flow
-
-```mermaid
-flowchart LR
-
-    RC[RideCreated]
-    RS[RideSearchingDriver]
-    DA[DriverAssigned]
-    RCMP[RideCompleted]
-
-    PC[PaymentCreated]
-    PP[PaymentPaid]
-    PF[PaymentFailed]
-
-    RAT[RatingSubmitted]
-    INC[IncidentCreated]
-
-    RC --> RS
-    RS --> DA
-    DA --> RCMP
-
-    RCMP --> PC
-    PC --> PP
-    PC --> PF
-
-    RCMP --> RAT
-    RCMP --> INC
-```
-
----
-
-# 6. Ánh xạ Bounded Context → Microservice
-
-Dựa trên API hiện có, đề xuất **8 Microservice chính**.
-
-| Bounded Context | Microservice         | API chính            |
-| --------------- | -------------------- | -------------------- |
-| Identity        | `auth-service`       | `/auth/*`            |
-| User            | `user-service`       | `/users/*`           |
-| Driver          | `driver-service`     | `/drivers/*`         |
-| Ride            | `ride-service`       | `/rides/*`           |
-| Dispatch        | `dispatch-service`   | `/driver-requests/*` |
-| Payment         | `payment-service`    | `/payments/*`        |
-| Rating          | `rating-service`     | `/rides/{id}/rating` |
-| Operations      | `operations-service` | `/operations/*`      |
-
-### External Services
-
-Không nên biến những thành phần sau thành Microservice nội bộ vì repo đang mô tả chúng là hệ thống bên ngoài:
-
-```text
-Map/Location Service
-Payment Gateway
-```
-
----
-
-# 7. Mô tả Service
-
-## 7.1. auth-service
-
-### Trách nhiệm
-
-* Register
-* Login
-* Xác thực JWT
-* Phân quyền theo Role
-
-### API
-
-```text
-POST /auth/register
-POST /auth/login
-```
-
-### Role
-
-```text
-CUSTOMER
-DRIVER
-OPERATIONS
-ADMIN
-```
-
-### Database
-
-```text
-auth_db
-```
-
-Đề xuất bảng:
-
-```text
-credentials
-refresh_tokens
-```
-
-> Việc tách bảng `credentials` khỏi `users` là đề xuất kiến trúc; API hiện tại chỉ mô tả User chứ không công bố schema database thực tế.
-
----
-
-# 7.2. user-service
-
-### Trách nhiệm
-
-Quản lý thông tin User:
-
-```text
-GET   /users/me
-PATCH /users/me
-```
-
-### Database
-
-```text
-user_db
-```
-
-### Bảng
-
-```text
-users
-```
-
-```text
-users
-----------------
-user_id PK
-full_name
-phone UK
-role
-status
-created_at
-updated_at
-```
-
----
-
-# 7.3. driver-service
-
-### Trách nhiệm
-
-* Driver profile
-* Vehicle
-* Availability
-* Current location
-* Driver rating summary
-
-### API
-
-```text
-PUT   /drivers/me
-PATCH /drivers/me/availability
-```
-
-### Database
-
-```text
-driver_db
-```
-
-### Mô hình
-
-```mermaid
-erDiagram
-
-    DRIVER ||--o{ VEHICLE : owns
-
-    DRIVER {
-        int driver_id PK
-        int user_id
-        decimal rating
-        string availability_status
-        decimal current_latitude
-        decimal current_longitude
-    }
-
-    VEHICLE {
-        int vehicle_id PK
-        int driver_id
-        string vehicle_type
-        string license_plate UK
-        string status
-    }
-```
-
----
-
-# 7.4. ride-service
-
-Đây là service quản lý **vòng đời Ride**.
-
-### API
-
-```text
-POST  /rides/estimate
-POST  /rides
-GET   /rides
-GET   /rides/{ride_id}
-PATCH /rides/{ride_id}/status
-POST  /rides/{ride_id}/cancel
-```
-
-### Database
-
-```text
-ride_db
-```
-
-### Mô hình
-
-```mermaid
-erDiagram
-
-    RIDE {
-        int ride_id PK
-        int customer_id
-        string pickup_address
-        decimal pickup_latitude
-        decimal pickup_longitude
-        string destination_address
-        decimal destination_latitude
-        decimal destination_longitude
-        string vehicle_type
-        decimal estimated_fare
-        decimal final_fare
-        string status
-        datetime created_at
-        datetime updated_at
-    }
-```
-
-### Lưu ý
-
-`ride-service` là **owner của Ride**, các service khác không được trực tiếp cập nhật bảng Ride.
-
----
-
-# 7.5. dispatch-service
-
-### Trách nhiệm
-
-* Tìm Driver phù hợp
-* Lọc theo khoảng cách
-* Lọc theo loại xe
-* Ưu tiên rating
-* Gửi Driver Request
-* Xử lý Accept/Decline/Expire
-
-### API
-
-```text
-POST /rides/{ride_id}/driver-requests
-POST /driver-requests/{request_id}/respond
-```
-
-### Database
-
-```text
-dispatch_db
-```
-
-### Mô hình
-
-```mermaid
-erDiagram
-
-    DRIVER_REQUEST {
-        int request_id PK
-        int ride_id
-        int driver_id
-        string status
-        datetime sent_at
-        datetime responded_at
-    }
-```
-
-### Rule
-
-```text
-AVAILABLE Driver
-      +
-đúng Vehicle Type
-      +
-trong bán kính 5 km
-      ↓
-Candidate
-      ↓
-Driver Request
-      ↓
-30 seconds
-      ↓
-ACCEPTED / DECLINED / EXPIRED
-```
-
----
-
-# 7.6. payment-service
-
-### Trách nhiệm
-
-* Tạo Payment
-* CASH
-* ONLINE
-* Cash confirmation
-* Payment Gateway callback
-* Idempotency
-
-### API
-
-```text
-POST /rides/{ride_id}/payments
-POST /payments/{payment_id}/cash-confirmation
-POST /payments/callback
-```
-
-### Database
+## 9.6. Data Ownership
 
 ```text
 payment_db
+└── Payment
 ```
 
-### Mô hình
+Payment Service sở hữu Payment và Transaction Information.
 
-```mermaid
-erDiagram
-
-    PAYMENT {
-        int payment_id PK
-        int ride_id
-        string method
-        string status
-        decimal amount
-        string provider_transaction_id
-        string checkout_url
-        datetime paid_at
-    }
-```
+Payment Service không thay đổi trực tiếp dữ liệu Ride.
 
 ---
 
-# 7.7. rating-service
+# 10. Rating Service
 
-### Trách nhiệm
+## 10.1. Bounded Context
 
-* Tạo Rating
-* Kiểm tra quyền Customer
-* Kiểm tra Ride hoàn tất
-* Kiểm tra Rating trùng
-* Cập nhật điểm Driver
+**Rating**
 
-### API
+## 10.2. Business Responsibility
 
-```text
-POST /rides/{ride_id}/rating
-```
+Rating Service chịu trách nhiệm ghi nhận đánh giá của Customer đối với Driver sau khi Ride hoàn thành.
 
-### Database
+## 10.3. API
+
+| Method | Endpoint                  | Chức năng    |
+| ------ | ------------------------- | ------------ |
+| POST   | `/rides/{ride_id}/rating` | Tạo đánh giá |
+
+## 10.4. Business Rules
+
+* Ride phải ở trạng thái `COMPLETED`.
+* Customer phải là người của Ride.
+* Điểm đánh giá từ 1 đến 5.
+* Một Ride không được đánh giá nhiều lần.
+
+## 10.5. Data Ownership
 
 ```text
 rating_db
+└── Rating
 ```
 
-### Mô hình
-
-```mermaid
-erDiagram
-
-    RATING {
-        int rating_id PK
-        int ride_id
-        int customer_id
-        int driver_id
-        int score
-        string comment
-        datetime created_at
-    }
-```
-
-### Rule
-
-```text
-1 <= score <= 5
-```
-
-và:
-
-```text
-Một Ride → tối đa một Rating
-```
+Rating Service không quản lý vòng đời Ride.
 
 ---
 
-# 7.8. operations-service
+# 11. Operations Service
 
-### Trách nhiệm
+## 11.1. Bounded Context
 
-* Theo dõi Ride đang hoạt động
-* Filter Ride theo status
-* Ghi nhận Incident
-* Hỗ trợ vận hành
+**Operations**
 
-### API
+## 11.2. Business Responsibility
 
-```text
-GET  /operations/rides/active
-POST /operations/incidents
-```
+Operations Service phục vụ nhân viên vận hành trong việc theo dõi các chuyến đang hoạt động và ghi nhận sự cố.
 
-### Database
+## 11.3. API
 
-```text
-operations_db
-```
+| Method | Endpoint                   | Chức năng                   |
+| ------ | -------------------------- | --------------------------- |
+| GET    | `/operations/rides/active` | Xem các Ride đang hoạt động |
+| POST   | `/operations/incidents`    | Ghi nhận sự cố              |
 
-### Mô hình đề xuất
+## 11.4. Incident
 
-```mermaid
-erDiagram
-
-    INCIDENT {
-        int incident_id PK
-        int ride_id
-        string incident_type
-        string description
-        string priority
-        string status
-        datetime created_at
-    }
-```
-
-Các loại Incident được API/Test Case mô tả:
+Các loại sự cố được repo xác định:
 
 ```text
 SAFETY
@@ -1133,399 +487,340 @@ TECHNICAL
 OTHER
 ```
 
----
+Trạng thái:
 
-# 8. Mô hình dữ liệu cho từng Service
-
-## 8.1. Tổng quan Database per Service
-
-```mermaid
-flowchart TB
-
-    Auth["auth-service"]
-    User["user-service"]
-    Driver["driver-service"]
-    Ride["ride-service"]
-    Dispatch["dispatch-service"]
-    Payment["payment-service"]
-    Rating["rating-service"]
-    Ops["operations-service"]
-
-    AuthDB[("auth_db")]
-    UserDB[("user_db")]
-    DriverDB[("driver_db")]
-    RideDB[("ride_db")]
-    DispatchDB[("dispatch_db")]
-    PaymentDB[("payment_db")]
-    RatingDB[("rating_db")]
-    OpsDB[("operations_db")]
-
-    Auth --> AuthDB
-    User --> UserDB
-    Driver --> DriverDB
-    Ride --> RideDB
-    Dispatch --> DispatchDB
-    Payment --> PaymentDB
-    Rating --> RatingDB
-    Ops --> OpsDB
+```text
+OPEN
+IN_PROGRESS
+RESOLVED
+CLOSED
 ```
+
+## 11.5. Data Ownership
+
+```text
+operations_db
+├── Operation
+└── Incident
+```
+
+Operations Service sử dụng thông tin từ các nghiệp vụ khác để phục vụ vận hành nhưng không trở thành nơi sở hữu dữ liệu Ride, Payment hoặc Driver.
 
 ---
 
-## 8.2. auth_db
+# 12. Tổng hợp Microservice và Database
+
+| Microservice           | Database            | Aggregate/Entity chính |
+| ---------------------- | ------------------- | ---------------------- |
+| Auth Service           | `auth_db`           | User Authentication    |
+| User Service           | `user_db`           | User Profile           |
+| Driver Service         | `driver_db`         | Driver, Vehicle        |
+| Ride Service           | `ride_db`           | Ride                   |
+| Driver Request Service | `driver_request_db` | DriverRequest          |
+| Payment Service        | `payment_db`        | Payment                |
+| Rating Service         | `rating_db`         | Rating                 |
+| Operations Service     | `operations_db`     | Incident, Operation    |
+
+Nguyên tắc:
 
 ```text
-credentials
----------------------
-credential_id PK
-user_id
-password_hash
-created_at
-updated_at
-
-refresh_tokens
----------------------
-token_id PK
-user_id
-token_hash
-expires_at
-revoked_at
+1 Service
+     │
+     └── 1 phạm vi nghiệp vụ
+              │
+              └── 1 Database sở hữu
 ```
+
+Không sử dụng Database chung giữa các Microservice.
 
 ---
 
-## 8.3. user_db
+# 13. Giao tiếp giữa các Microservice
+
+Kiến trúc giao tiếp được tổ chức theo hướng Service gọi đến Service sở hữu nghiệp vụ cần thiết.
 
 ```text
-users
----------------------
-user_id PK
-full_name
-phone UK
-role
-status
-created_at
-updated_at
-```
+                         ┌───────────────┐
+                         │  Auth Service │
+                         └───────┬───────┘
+                                 │
+                                 ▼
+                         ┌───────────────┐
+                         │ User Service  │
+                         └───────────────┘
 
----
 
-## 8.4. driver_db
+Customer
+   │
+   ▼
+┌───────────────┐
+│  Ride Service │
+└───────┬───────┘
+        │
+        │ Driver Request
+        ▼
+┌────────────────────────┐
+│ Driver Request Service │
+└───────┬────────────────┘
+        │
+        ├──────────────► Driver Service
+        │
+        └──────────────► Driver availability/location
 
-```text
-drivers
----------------------
-driver_id PK
-user_id
-rating
-availability_status
-current_latitude
-current_longitude
-created_at
-updated_at
-```
 
-```text
-vehicles
----------------------
-vehicle_id PK
-driver_id
-vehicle_type
-license_plate UK
-status
+        Ride completed
+              │
+       ┌──────┴──────┐
+       ▼             ▼
+┌─────────────┐ ┌─────────────┐
+│Payment      │ │Rating       │
+│Service      │ │Service      │
+└─────────────┘ └─────────────┘
+
+Operations
+     │
+     ├──────► xem Ride đang hoạt động
+     │
+     └──────► ghi nhận Incident
 ```
 
 ---
 
-## 8.5. ride_db
+# 14. API Gateway và Authentication
+
+Các API nghiệp vụ yêu cầu xác thực được bảo vệ bằng Bearer Token/JWT.
+
+Luồng tổng quát:
 
 ```text
-rides
----------------------
-ride_id PK
-customer_id
-pickup_address
-pickup_latitude
-pickup_longitude
-destination_address
-destination_latitude
-destination_longitude
-vehicle_type
-estimated_fare
-final_fare
-status
-created_at
-updated_at
+Client
+   │
+   │ Login
+   ▼
+Auth Service
+   │
+   │ Token
+   ▼
+Client
+   │
+   │ Bearer Token
+   ▼
+API
+   │
+   ├── User Service
+   ├── Driver Service
+   ├── Ride Service
+   ├── Driver Request Service
+   ├── Payment Service
+   ├── Rating Service
+   └── Operations Service
 ```
+
+Auth Service chịu trách nhiệm xác thực token; Service nghiệp vụ chịu trách nhiệm kiểm tra quyền truy cập phù hợp với nghiệp vụ mà nó cung cấp.
 
 ---
 
-## 8.6. dispatch_db
+# 15. Luồng nghiệp vụ xuyên Microservice
+
+## 15.1. Đặt và thực hiện chuyến
 
 ```text
-driver_requests
----------------------
-request_id PK
-ride_id
-driver_id
-status
-sent_at
-responded_at
+Customer
+   │
+   │ 1. Login
+   ▼
+Auth Service
+   │
+   │ 2. Authentication
+   ▼
+Customer
+   │
+   │ 3. Create Ride
+   ▼
+Ride Service
+   │
+   │ 4. Find/Request Driver
+   ▼
+Driver Request Service
+   │
+   │ 5. Check Driver
+   ▼
+Driver Service
+   │
+   │ 6. Driver accepts
+   ▼
+Driver Request Service
+   │
+   │ 7. Update Ride assignment/status
+   ▼
+Ride Service
+   │
+   │ 8. Driver performs Ride
+   ▼
+Ride Service
+   │
+   │ 9. COMPLETED
+   ├─────────────────┐
+   ▼                 ▼
+Payment Service   Rating Service
 ```
+
+Điểm quan trọng là **mỗi bước không có nghĩa là một Microservice mới**. Microservice được xác định bởi trách nhiệm nghiệp vụ mà nó sở hữu.
 
 ---
 
-## 8.7. payment_db
+# 16. Ranh giới trách nhiệm giữa các Microservice
 
-```text
-payments
----------------------
-payment_id PK
-ride_id
-method
-status
-amount
-provider_transaction_id
-checkout_url
-paid_at
-created_at
-```
-
----
-
-## 8.8. rating_db
-
-```text
-ratings
----------------------
-rating_id PK
-ride_id UK
-customer_id
-driver_id
-score
-comment
-created_at
-```
+| Nghiệp vụ              | Service sở hữu         | Service không sở hữu |
+| ---------------------- | ---------------------- | -------------------- |
+| Đăng nhập              | Auth Service           | User, Ride           |
+| Hồ sơ User             | User Service           | Auth                 |
+| Hồ sơ Driver           | Driver Service         | Driver Request       |
+| Tạo Ride               | Ride Service           | Driver Request       |
+| Trạng thái Ride        | Ride Service           | Payment              |
+| Tìm/Gửi yêu cầu Driver | Driver Request Service | Ride Service         |
+| Thông tin Driver       | Driver Service         | Ride Service         |
+| Thanh toán             | Payment Service        | Ride Service         |
+| Đánh giá               | Rating Service         | Ride Service         |
+| Sự cố vận hành         | Operations Service     | Ride Service         |
 
 ---
 
-## 8.9. operations_db
+# 17. Nguyên tắc không chồng lấn
+
+Các Microservice được thiết kế sao cho một nghiệp vụ chỉ có **một nơi sở hữu chính**.
+
+Ví dụ:
+
+### Không đúng
 
 ```text
-incidents
----------------------
-incident_id PK
-ride_id
-incident_type
-description
-priority
-status
-created_at
-updated_at
+Ride Service ── quản lý Payment
+Payment Service ── quản lý Payment
 ```
+
+### Đúng
+
+```text
+Ride Service
+    │
+    └── quản lý Ride
+
+Payment Service
+    │
+    └── quản lý Payment
+```
+
+Ride Service chỉ cần biết thông tin thanh toán cần thiết cho Ride.
+
+Tương tự:
+
+### Không đúng
+
+```text
+Driver Service
+    ├── Driver
+    ├── Driver Availability
+    ├── Driver Request
+    └── Assignment
+```
+
+### Đúng
+
+```text
+Driver Service
+    └── Driver information
+
+Driver Request Service
+    └── DriverRequest / Assignment process
+```
+
+Như vậy, việc thay đổi thuật toán tìm tài xế không buộc phải thay đổi logic quản lý hồ sơ tài xế.
 
 ---
 
-# 8.10. Nguyên tắc Database per Service
-
-Mỗi Microservice sở hữu database riêng:
+# 18. Kiến trúc Microservice tổng thể
 
 ```text
-auth-service       → auth_db
-user-service       → user_db
-driver-service     → driver_db
-ride-service       → ride_db
-dispatch-service   → dispatch_db
-payment-service    → payment_db
-rating-service     → rating_db
-operations-service → operations_db
+                         ┌────────────────────┐
+                         │       Client       │
+                         └─────────┬──────────┘
+                                   │
+                                   ▼
+                         ┌────────────────────┐
+                         │    API Gateway     │
+                         └─────────┬──────────┘
+                                   │
+             ┌─────────────────────┼─────────────────────┐
+             │                     │                     │
+             ▼                     ▼                     ▼
+      ┌─────────────┐       ┌─────────────┐      ┌──────────────┐
+      │Auth Service │       │User Service │      │Driver Service│
+      └──────┬──────┘       └──────┬──────┘      └──────┬───────┘
+             │                     │                    │
+             ▼                     ▼                    ▼
+          auth_db              user_db              driver_db
+
+
+                         ┌─────────────────┐
+                         │   Ride Service  │
+                         └────────┬────────┘
+                                  │
+                 ┌────────────────┼────────────────┐
+                 │                │                │
+                 ▼                ▼                ▼
+       ┌────────────────┐  ┌──────────────┐  ┌───────────────┐
+       │Driver Request  │  │Payment       │  │Rating         │
+       │Service         │  │Service       │  │Service        │
+       └───────┬────────┘  └──────┬───────┘  └───────┬───────┘
+               │                  │                  │
+               ▼                  ▼                  ▼
+       driver_request_db      payment_db          rating_db
+
+
+                         ┌──────────────────┐
+                         │Operations Service│
+                         └────────┬─────────┘
+                                  │
+                                  ▼
+                            operations_db
+
+
+External Systems:
+
+       ┌─────────────────────┐
+       │   Payment Gateway   │
+       └──────────┬──────────┘
+                  │
+                  ▼
+           Payment Service
+
+
+       ┌─────────────────────┐
+       │ Map/Location Service│
+       └──────────┬──────────┘
+                  │
+                  ▼
+              Ride/Driver
 ```
 
-Không cho phép:
+# 19. Kết luận thiết kế
 
-```text
-payment-service → SELECT trực tiếp ride_db
-rating-service  → UPDATE trực tiếp driver_db
-dispatch-service → UPDATE trực tiếp ride_db
-```
+Hệ thống CAB được phân tách thành các Microservice dựa trên **business boundary** thay vì chia nhỏ theo số lượng API hoặc bảng dữ liệu.
 
-Thay vào đó, các service trao đổi qua:
+Các trách nhiệm cốt lõi được tách thành:
 
-```text
-REST API
-hoặc
-Domain Event / Message Broker
-```
+**Authentication → User → Driver → Ride → Driver Request → Payment → Rating → Operations**
 
----
+Trong đó:
 
-# 9. Kiến trúc Microservice tổng thể
+* **Auth Service** quản lý xác thực.
+* **User Service** quản lý hồ sơ người dùng.
+* **Driver Service** quản lý thông tin tài xế và phương tiện.
+* **Ride Service** quản lý toàn bộ vòng đời Ride.
+* **Driver Request Service** quản lý quá trình tìm và nhận chuyến.
+* **Payment Service** quản lý thanh toán.
+* **Rating Service** quản lý đánh giá.
+* **Operations Service** quản lý hoạt động vận hành và sự cố.
 
-```mermaid
-flowchart TB
-
-    Client["Customer / Driver / Admin / Operations"]
-
-    Gateway["API Gateway"]
-
-    Auth["Auth Service"]
-    User["User Service"]
-    Driver["Driver Service"]
-    Ride["Ride Service"]
-    Dispatch["Dispatch Service"]
-    Payment["Payment Service"]
-    Rating["Rating Service"]
-    Ops["Operations Service"]
-
-    Map["External Map/Location Service"]
-    PG["External Payment Gateway"]
-
-    Broker["Message Broker"]
-
-    Client --> Gateway
-
-    Gateway --> Auth
-    Gateway --> User
-    Gateway --> Driver
-    Gateway --> Ride
-    Gateway --> Dispatch
-    Gateway --> Payment
-    Gateway --> Rating
-    Gateway --> Ops
-
-    Ride --> Map
-    Payment --> PG
-
-    Ride --> Broker
-    Dispatch --> Broker
-    Payment --> Broker
-    Rating --> Broker
-    Ops --> Broker
-
-    Broker --> Ride
-    Broker --> Dispatch
-    Broker --> Payment
-    Broker --> Rating
-    Broker --> Ops
-```
-
----
-
-# 10. Luồng đặt xe hoàn chỉnh
-
-```mermaid
-sequenceDiagram
-
-    participant C as Customer
-    participant API as API Gateway
-    participant R as Ride Service
-    participant D as Dispatch Service
-    participant DS as Driver Service
-    participant P as Payment Service
-    participant G as Payment Gateway
-    participant RT as Rating Service
-
-    C->>API: POST /rides/estimate
-    API->>R: Estimate
-    R-->>C: Fare + Distance
-
-    C->>API: POST /rides
-    API->>R: Create Ride
-    R-->>C: Ride SEARCHING_DRIVER
-
-    R->>D: RideCreated
-
-    D->>DS: Find AVAILABLE Drivers
-    DS-->>D: Candidates
-
-    D->>DS: Driver Request
-    DS-->>D: Driver Accepted
-
-    D->>R: DriverAssigned
-    R-->>C: DRIVER_ASSIGNED
-
-    DS->>R: DRIVER_ARRIVING
-    R-->>C: Status update
-
-    DS->>R: IN_PROGRESS
-    R-->>C: Status update
-
-    DS->>R: COMPLETED + Final Fare
-    R-->>C: Final Fare
-
-    C->>P: Create Payment
-    P->>G: Online Payment
-    G-->>P: Callback SUCCESS
-
-    P-->>C: PAID
-
-    C->>RT: POST Rating
-    RT-->>C: Rating Created
-```
-
----
-
-# 11. Kết luận kiến trúc
-
-Từ chính các API và nghiệp vụ trong repository, kiến trúc Microservice đề xuất gồm:
-
-```text
-                    CAB SYSTEM
-                        │
-                  API Gateway
-                        │
-     ┌──────────────────┼───────────────────┐
-     │                  │                   │
- Identity             Ride              Operations
-     │                  │                   │
- ┌───┴───┐        ┌─────┴─────┐             │
- Auth   User      Dispatch   Driver          │
-                     │                       │
-                     └───────┬───────────────┘
-                             │
-                        Ride lifecycle
-                             │
-                    ┌────────┴────────┐
-                    │                 │
-                 Payment            Rating
-                    │                 │
-              Payment Gateway       Driver
-```
-
-### Các Microservice cuối cùng
-
-| STT | Service              | Database        | Vai trò                     |
-| --: | -------------------- | --------------- | --------------------------- |
-|   1 | `auth-service`       | `auth_db`       | Authentication/JWT          |
-|   2 | `user-service`       | `user_db`       | User profile                |
-|   3 | `driver-service`     | `driver_db`     | Driver + Vehicle + Location |
-|   4 | `ride-service`       | `ride_db`       | Vòng đời Ride               |
-|   5 | `dispatch-service`   | `dispatch_db`   | Tìm và phân công Driver     |
-|   6 | `payment-service`    | `payment_db`    | Thanh toán                  |
-|   7 | `rating-service`     | `rating_db`     | Đánh giá Driver             |
-|   8 | `operations-service` | `operations_db` | Giám sát và Incident        |
-
-### Những thành phần giữ ở bên ngoài
-
-```text
-Map/Location Service
-Payment Gateway
-```
-
-vì trong SRS chúng được xác định là **external actor/service**, không phải miền nghiệp vụ nội bộ của CAB SYSTEM.
-
-### Điểm quan trọng
-
-Thiết kế trên bám theo những gì repo hiện có:
-
-* `/auth/*` → Authentication
-* `/users/*` → User
-* `/drivers/*` → Driver
-* `/rides/*` → Ride
-* `/driver-requests/*` → Dispatch
-* `/payments/*` → Payment
-* `/rides/{ride_id}/rating` → Rating
-* `/operations/*` → Operations
-
-Do repo không cung cấp implementation database/service thực tế mà chủ yếu cung cấp **SRS + API Specification + Test Case**, phần `database-per-service`, Event và một số bảng phụ ở trên được ghi nhận là **thiết kế Microservice đề xuất**, không khẳng định đó là database hiện đang chạy của repo.
-
+Các Service có **ranh giới trách nhiệm riêng**, **sở hữu dữ liệu riêng** và chỉ giao tiếp thông qua interface được cung cấp. Khi ghép các Service lại, chúng tạo thành một hệ thống CAB hoàn chỉnh nhưng mỗi Service vẫn có thể được phát triển và thay đổi tương đối độc lập.
