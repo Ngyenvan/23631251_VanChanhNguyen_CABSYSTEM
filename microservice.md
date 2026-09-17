@@ -1,12 +1,5 @@
 # THIẾT KẾ MICRO-SERVICE – CAB SYSTEM
 
-**Repository:** `23631251_VanChanhNguyen_CABSYSTEM`
-**Cơ sở thiết kế:** `srs.md` + API Specification + Test Case của repository.
-
-> **Lưu ý:** Những phần lấy trực tiếp từ SRS/API được xem là dữ liệu của hệ thống. Những phần như ranh giới Microservice, Domain Event và database-per-service là **đề xuất thiết kế Microservice** dựa trên các nghiệp vụ hiện có.
-
----
-
 # 1. Phân tách Use Case theo miền nghiệp vụ
 
 ## 1.1. Các Actor của hệ thống
