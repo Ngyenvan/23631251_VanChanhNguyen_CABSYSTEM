@@ -1651,7 +1651,4 @@ Hoàn tất chuyến
 Hủy chuyến
 ```
 
-nên giữ toàn bộ trong `ride-service` sẽ nhất quán hơn với SRS, API và Test Case hiện có.
-
----
 
