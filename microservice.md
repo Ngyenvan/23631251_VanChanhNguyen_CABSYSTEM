@@ -1,13 +1,8 @@
 # CAB System — Microservice Design and Service Blueprint
 
-**Phase:** 7 — Microservice Design và Service Blueprint  
-**Status:** implementation blueprint, **not as-built source code**  
-**Canonical baseline:** Phase 6 `srs.md`, final RTM, 11 final OpenAPI YAMLs and paired testcases  
-**Supplemental source:** uploaded `Micro-service.docx`; DOCX-specific content is marked `[MICROSERVICE DESIGN]`
-
 ## 1. Design Summary và Design Scope
 
-[TECHNICAL DESIGN] Phase 7 converts the validated Phase 6 baseline into an implementation-ready logical blueprint without creating new business capabilities. The target remains **10 business-capability services**. Service boundaries are based on capability, consistency, change and failure boundaries—not on one entity/table per service.
+[TECHNICAL DESIGN] The target remains **10 business-capability services**. Service boundaries are based on capability, consistency, change and failure boundaries—not on one entity/table per service.
 
 [MICROSERVICE DESIGN] The uploaded DOCX states that decomposition should follow business responsibility and that contexts should coordinate through business communication rather than operate another context's internal logic. Phase 7 retains that principle. It does **not** retain the DOCX's 17-service split where it conflicts with the validated Phase 6 baseline.
 
