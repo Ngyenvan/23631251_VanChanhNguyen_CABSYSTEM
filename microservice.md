@@ -654,18 +654,3 @@ No new BR/FR/UC/AC identifiers are created.
 | BG08 | BR17 | FR42 | BRULE17 | UC14 | AC14, AC18 | listAuditLogs (GET /operations/audit-logs) | Operations & Audit | operations-audit-service | ENT11 | PASS |
 | BG07 | BR15 | FR43 | N/A | UC15 | AC15, AC18 | getActivityReport (GET /reports/activity) | Reporting | reporting-service | Derived reporting projections; source facts remain service-owned | PASS |
 | BG09, BG10 | BR18 | FR44 | BRULE28 | UC04, UC10, UC11 | AC18, AC19 | N/A - extensibility requirement; no standalone REST operation | Trip & Booking; Payment; Notification; cross-cutting | Cross-service architecture concern | No new entity; existing service-owned data boundaries remain | PASS |
-
-## 18. Implementation Handoff Notes
-
-1. Implement the **27 final OpenAPI operations contract-first**; do not silently restore excluded estimate/cancel/cash-confirmation behavior.
-2. Create schemas/migrations only inside the owning service boundary.
-3. Use adapters/ACL for Payment and Notification providers.
-4. If asynchronous events are implemented, version event schemas and preserve minimum payloads in §8; broker/retry/ordering remains a reviewed implementation decision.
-5. Trip owns lifecycle; Dispatch owns assignment attempts; Payment owns payment state; Notification owns delivery state.
-6. Continue using the paired Phase 6 testcases as contract test basis.
-7. Do not hard-code 15s/30s timeout, 5 km radius, 3-minute search, fare formula, cancellation, rating scale, network retry or retention before approval.
-8. Add observability as technical implementation without changing business semantics or leaking sensitive data.
-9. Any future new service/API/entity must trace to approved BR/FR/UC/AC and update RTM/API/tests.
-10. Once source code exists, perform a separate **as-built conformance review**.
-
-**Conclusion:** Phase 7 preserves the Phase 6 business/API baseline, applies explicit Database per Service ownership, uses compatible DOCX design material under `[MICROSERVICE DESIGN]`, and records conflicts rather than silently changing requirements.
