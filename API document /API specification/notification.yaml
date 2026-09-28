@@ -1,15 +1,15 @@
 openapi: 3.0.3
 info:
-  title: CAB System API - Reporting
+  title: CAB System API - Notification
   version: 1.5.0
-  description: Derived report views; formulas, periods and access details remain OI-09.
+  description: Internal request boundary; delivery failure cannot reverse core business state.
 paths:
-  /reports/activity:
-    get:
-      operationId: getActivityReport
-      summary: Báo cáo Trip, revenue, completion, cancellation và dispatch metrics
+  /internal/notifications:
+    post:
+      operationId: requestBusinessNotification
+      summary: Source service yêu cầu gửi thông báo tại mốc SRS
       security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Activity report }, '403': { $ref: '#/components/responses/Forbidden' } }
+      responses: { '202': { description: Notification accepted }, '503': { description: Channel unavailable without business rollback } }
 
 components:
   securitySchemes:

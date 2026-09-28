@@ -1,15 +1,16 @@
 openapi: 3.0.3
 info:
-  title: CAB System API - Reporting
+  title: CAB System API - Rating
   version: 1.5.0
-  description: Derived report views; formulas, periods and access details remain OI-09.
+  description: Rating belongs to a completed Trip and is independent of electronic payment success.
 paths:
-  /reports/activity:
-    get:
-      operationId: getActivityReport
-      summary: Báo cáo Trip, revenue, completion, cancellation và dispatch metrics
+  /trips/{trip_id}/rating:
+    post:
+      operationId: rateCompletedTripDriver
+      summary: Customer đánh giá Driver sau Trip hoàn thành
       security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Activity report }, '403': { $ref: '#/components/responses/Forbidden' } }
+      parameters: [{ $ref: './common.yaml#/components/parameters/TripId' }]
+      responses: { '201': { description: Rating created }, '409': { $ref: '#/components/responses/Conflict' } }
 
 components:
   securitySchemes:

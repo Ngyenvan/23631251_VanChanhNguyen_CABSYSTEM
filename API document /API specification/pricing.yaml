@@ -1,35 +1,33 @@
 openapi: 3.0.3
-info: { title: CAB System API - Pricing, version: 1.5.0 }
+info:
+  title: CAB System API - Pricing
+  version: 1.5.0
+  description: Final fare is determined only after Trip completion; fare policy remains open.
 paths:
   /trips/{trip_id}/fare:
     get:
       operationId: getTripFare
-      summary: Customer xem số tiền phải trả sau Trip hoàn thành
-      x-trace: { fr: [FR-28, FR-29] }
+      summary: Customer xem Fare của Trip hoàn thành
       security: [{ bearerAuth: [] }]
       parameters: [{ $ref: './common.yaml#/components/parameters/TripId' }]
-      responses:
-        '200': { description: Số tiền của Trip, content: { application/json: { schema: { type: object, required: [trip_id, amount], properties: { trip_id: { type: integer }, amount: { type: number, minimum: 0 } } } } } }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/Conflict' }
+      responses: { '200': { description: Fare }, '409': { $ref: '#/components/responses/Conflict' } }
   /internal/trips/{trip_id}/fare:
     post:
       operationId: calculateCompletedTripFare
-      summary: CAB System xác định cước khi Trip hoàn thành
-      description: Công thức và đầu vào chi tiết là OI-01/OI-15; không tạo cước nếu Trip chưa hoàn thành hoặc chính sách cước chưa sẵn sàng.
-      x-trace: { fr: [FR-27, FR-28] }
+      summary: CAB System xác định Fare sau trip.completed
       security: [{ bearerAuth: [] }]
       parameters: [{ $ref: './common.yaml#/components/parameters/TripId' }]
-      responses:
-        '200': { description: Cước đã xác định, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/Trip' } } } }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/Conflict' }
+      responses: { '200': { description: Fare calculated }, '409': { $ref: '#/components/responses/Conflict' } }
+
 components:
-  securitySchemes: { bearerAuth: { $ref: './common.yaml#/components/securitySchemes/bearerAuth' } }
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    paymentProviderAuth: { type: http, scheme: bearer }
+  schemas:
+    Error: { type: object, required: [code, message], properties: { code: { type: string }, message: { type: string } } }
   responses:
-    Unauthorized: { description: Chưa xác thực, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ErrorResponse' } } } }
-    Forbidden: { description: Không có quyền xem cước, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ErrorResponse' } } } }
-    NotFound: { description: Không tìm thấy Trip, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ErrorResponse' } } } }
-    Conflict: { description: Trip chưa hoàn thành hoặc chính sách cước chưa được cấu hình, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ErrorResponse' } } } }
+    BadRequest: { description: Dữ liệu không hợp lệ }
+    Unauthorized: { description: Chưa xác thực }
+    Forbidden: { description: Không có quyền }
+    NotFound: { description: Không tìm thấy tài nguyên }
+    Conflict: { description: Xung đột trạng thái hoặc thao tác lặp }
