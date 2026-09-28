@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: CAB System API - Trip
+  version: 1.5.0
+  description: Trip lifecycle, pre-pickup cancellation and recovery trigger.
+paths:
+  /trips/{trip_id}:
+    get:
+      operationId: getTrip
+      summary: Customer hoặc Driver xem Trip thuộc mình
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: './common.yaml#/components/parameters/TripId' }]
+      responses: { '200': { description: Trip }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /trips/{trip_id}/status:
+    patch:
+      operationId: updateTripStatus
+      summary: Driver cập nhật arrived, picked up, in progress hoặc completed theo thứ tự
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: './common.yaml#/components/parameters/TripId' }]
+      responses: { '200': { description: Trip updated }, '409': { $ref: '#/components/responses/Conflict' } }
+  /trips/{trip_id}/cancellation:
+    post:
+      operationId: cancelPrePickupTrip
+      summary: Customer hủy Trip trước mốc picked up
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: './common.yaml#/components/parameters/TripId' }]
+      responses: { '200': { description: Trip cancelled }, '409': { $ref: '#/components/responses/Conflict' } }
+  /trips/{trip_id}/cannot-serve:
+    post:
+      operationId: reportDriverCannotServe
+      summary: Driver báo không thể phục vụ trước pickup; tự kích hoạt recovery duy nhất
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: './common.yaml#/components/parameters/TripId' }]
+      responses: { '202': { description: Recovery handled }, '409': { $ref: '#/components/responses/Conflict' } }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    paymentProviderAuth: { type: http, scheme: bearer }
+  schemas:
+    Error: { type: object, required: [code, message], properties: { code: { type: string }, message: { type: string } } }
+  responses:
+    BadRequest: { description: Dữ liệu không hợp lệ }
+    Unauthorized: { description: Chưa xác thực }
+    Forbidden: { description: Không có quyền }
+    NotFound: { description: Không tìm thấy tài nguyên }
+    Conflict: { description: Xung đột trạng thái hoặc thao tác lặp }

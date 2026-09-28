@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  title: CAB System API - Authentication
+  version: 1.5.0
+  description: Account identity and authentication. Input rules and detailed permission matrix remain OI-08/OI-18.
+paths:
+  /auth/register:
+    post:
+      operationId: registerAccount
+      summary: Customer hoặc Driver tự đăng ký account
+      security: []
+      responses: { '201': { description: Account created }, '400': { $ref: '#/components/responses/BadRequest' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /auth/login:
+    post:
+      operationId: loginAccount
+      summary: Customer hoặc Driver đăng nhập
+      security: []
+      responses: { '200': { description: Authenticated }, '401': { $ref: '#/components/responses/Unauthorized' } }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    paymentProviderAuth: { type: http, scheme: bearer }
+  schemas:
+    Error: { type: object, required: [code, message], properties: { code: { type: string }, message: { type: string } } }
+  responses:
+    BadRequest: { description: Dữ liệu không hợp lệ }
+    Unauthorized: { description: Chưa xác thực }
+    Forbidden: { description: Không có quyền }
+    NotFound: { description: Không tìm thấy tài nguyên }
+    Conflict: { description: Xung đột trạng thái hoặc thao tác lặp }

@@ -1,0 +1,53 @@
+openapi: 3.0.3
+info:
+  title: CAB System API - Booking
+  version: 1.5.0
+  description: Booking creation, controlled revision, retry lock and permitted cancellation.
+paths:
+  /bookings:
+    post:
+      operationId: createBooking
+      summary: Customer gửi Booking và hệ thống mở PRIMARY Dispatch Session
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: './common.yaml#/components/parameters/IdempotencyKey' }]
+      responses: { '201': { description: Booking accepted }, '400': { $ref: '#/components/responses/BadRequest' } }
+  /bookings/{booking_id}:
+    get:
+      operationId: getBooking
+      summary: Customer xem trạng thái Booking, Driver xác nhận và ETA khi có dữ liệu hợp lệ
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: './common.yaml#/components/parameters/BookingId' }]
+      responses: { '200': { description: Booking }, '403': { $ref: '#/components/responses/Forbidden' } }
+    patch:
+      operationId: reviseBookingForRetry
+      summary: Customer sửa pickup, destination hoặc vehicle type trước retry
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: './common.yaml#/components/parameters/BookingId' }]
+      responses: { '200': { description: Booking revised }, '409': { $ref: '#/components/responses/Conflict' } }
+  /bookings/{booking_id}/retry:
+    post:
+      operationId: retryBookingDispatch
+      summary: Customer mở RETRY session sau khóa 10 giây
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: './common.yaml#/components/parameters/BookingId' }, { $ref: './common.yaml#/components/parameters/IdempotencyKey' }]
+      responses: { '202': { description: Retry session started }, '409': { $ref: '#/components/responses/Conflict' } }
+  /bookings/{booking_id}/cancellation:
+    post:
+      operationId: cancelBooking
+      summary: Customer hủy khi Booking đang điều phối
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: './common.yaml#/components/parameters/BookingId' }]
+      responses: { '200': { description: Booking cancelled }, '409': { $ref: '#/components/responses/Conflict' } }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    paymentProviderAuth: { type: http, scheme: bearer }
+  schemas:
+    Error: { type: object, required: [code, message], properties: { code: { type: string }, message: { type: string } } }
+  responses:
+    BadRequest: { description: Dữ liệu không hợp lệ }
+    Unauthorized: { description: Chưa xác thực }
+    Forbidden: { description: Không có quyền }
+    NotFound: { description: Không tìm thấy tài nguyên }
+    Conflict: { description: Xung đột trạng thái hoặc thao tác lặp }

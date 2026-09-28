@@ -2,107 +2,28 @@ openapi: 3.0.3
 info:
   title: CAB System API - Operations
   version: 1.5.0
-  description: Operations Staff quản lý/tra cứu trong quyền được cấp và hỗ trợ Trip lỗi; đặc tả không cung cấp endpoint gán Driver thủ công.
+  description: Operations Staff manages and supports within granted rights; manual Driver assignment is absent.
 paths:
-  /operations/drivers/accounts:
-    post:
-      operationId: createDriverAccountByOperations
-      summary: Operations Staff tạo tài khoản Driver trong phạm vi quyền
-      description: Trường dữ liệu, cách cấp thông tin đăng nhập và danh mục quyền là OI-08/OI-18; endpoint không tạo ra hành vi điều phối thủ công.
-      x-trace: { fr: [FR-05, FR-57], brule: [BRULE-02] }
-      security: [{ bearerAuth: [] }]
-      requestBody: { required: true, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/RegisterRequest' } } } }
-      responses:
-        '201': { description: Tài khoản Driver được tạo, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/Account' } } } }
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '409': { $ref: '#/components/responses/Conflict' }
   /operations/customers:
-    get:
-      operationId: listOperationalCustomers
-      summary: Quản lý/tra cứu Customer trong phạm vi quyền
-      x-trace: { fr: [FR-43, FR-57] }
-      security: [{ bearerAuth: [] }]
-      parameters: [{ $ref: './common.yaml#/components/parameters/Page' }, { $ref: './common.yaml#/components/parameters/Limit' }]
-      responses:
-        '200': { description: Dữ liệu Customer, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/PagedResult' } } } }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
+    get: { operationId: listOperationalCustomers, summary: Tra cứu Customer, security: [{ bearerAuth: [] }], responses: { '200': { description: Customers }, '403': { $ref: '#/components/responses/Forbidden' } } }
   /operations/drivers:
-    get:
-      operationId: listOperationalDrivers
-      summary: Quản lý/tra cứu Driver và độ mới vị trí
-      x-trace: { fr: [FR-44, FR-48, FR-57], brule: [BRULE-12] }
-      security: [{ bearerAuth: [] }]
-      parameters: [{ $ref: './common.yaml#/components/parameters/Page' }, { $ref: './common.yaml#/components/parameters/Limit' }]
-      responses:
-        '200': { description: Dữ liệu Driver và tình trạng điều phối, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/PagedResult' } } } }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
+    get: { operationId: listOperationalDrivers, summary: Tra cứu Driver và độ mới vị trí, security: [{ bearerAuth: [] }], responses: { '200': { description: Drivers } } }
   /operations/vehicles:
-    get:
-      operationId: listOperationalVehicles
-      summary: Quản lý/tra cứu phương tiện trong phạm vi quyền
-      x-trace: { fr: [FR-45, FR-57] }
-      security: [{ bearerAuth: [] }]
-      parameters: [{ $ref: './common.yaml#/components/parameters/Page' }, { $ref: './common.yaml#/components/parameters/Limit' }]
-      responses:
-        '200': { description: Dữ liệu phương tiện, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/PagedResult' } } } }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
+    get: { operationId: listOperationalVehicles, summary: Tra cứu phương tiện, security: [{ bearerAuth: [] }], responses: { '200': { description: Vehicles } } }
   /operations/trips:
-    get:
-      operationId: listOperationalTrips
-      summary: Quản lý/tra cứu Trip trong phạm vi quyền
-      x-trace: { fr: [FR-46, FR-47, FR-57] }
-      security: [{ bearerAuth: [] }]
-      parameters: [{ $ref: './common.yaml#/components/parameters/Page' }, { $ref: './common.yaml#/components/parameters/Limit' }]
-      responses:
-        '200': { description: Trip và tham chiếu session điều phối liên quan, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/PagedResult' } } } }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-  /operations/dispatch-sessions:
-    get:
-      operationId: listOperationalDispatchSessions
-      summary: Giám sát Dispatch Session và Round
-      description: Chỉ đọc/giám sát; không nhận Driver thủ công và không khởi tạo recovery thủ công.
-      x-trace: { fr: [FR-47, FR-49, FR-58], brule: [BRULE-14] }
-      security: [{ bearerAuth: [] }]
-      parameters: [{ $ref: './common.yaml#/components/parameters/Page' }, { $ref: './common.yaml#/components/parameters/Limit' }]
-      responses:
-        '200': { description: Session điều phối, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/PagedResult' } } } }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
+    get: { operationId: listOperationalTrips, summary: Giám sát Trip và session liên quan, security: [{ bearerAuth: [] }], responses: { '200': { description: Trips } } }
   /operations/trips/{trip_id}/support-context:
-    get:
-      operationId: getTripSupportContext
-      summary: Xem dữ liệu hỗ trợ Trip lỗi
-      description: Cung cấp dữ liệu để hỗ trợ trong phạm vi quyền; không thay đổi điều phối và không gán Driver thủ công.
-      x-trace: { fr: [FR-49, FR-57] }
-      security: [{ bearerAuth: [] }]
-      parameters: [{ $ref: './common.yaml#/components/parameters/TripId' }]
-      responses:
-        '200': { description: Ngữ cảnh Trip lỗi, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-  /operations/audit-logs:
-    get:
-      operationId: listAuditLogs
-      summary: Kiểm tra lưu vết quyết định và thao tác quan trọng
-      x-trace: { fr: [FR-58, FR-57], brule: [BRULE-09] }
-      security: [{ bearerAuth: [] }]
-      parameters: [{ $ref: './common.yaml#/components/parameters/Page' }, { $ref: './common.yaml#/components/parameters/Limit' }]
-      responses:
-        '200': { description: Audit log, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/PagedResult' } } } }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
+    get: { operationId: getTripSupportContext, summary: Xem ngữ cảnh hỗ trợ Trip lỗi, security: [{ bearerAuth: [] }], parameters: [{ $ref: './common.yaml#/components/parameters/TripId' }], responses: { '200': { description: Support context } } }
+
 components:
-  securitySchemes: { bearerAuth: { $ref: './common.yaml#/components/securitySchemes/bearerAuth' } }
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    paymentProviderAuth: { type: http, scheme: bearer }
+  schemas:
+    Error: { type: object, required: [code, message], properties: { code: { type: string }, message: { type: string } } }
   responses:
-    BadRequest: { description: Dữ liệu không hợp lệ, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ErrorResponse' } } } }
-    Unauthorized: { description: Chưa xác thực, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ErrorResponse' } } } }
-    Forbidden: { description: Không có quyền Operations Staff phù hợp, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ErrorResponse' } } } }
-    NotFound: { description: Không tìm thấy Trip, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ErrorResponse' } } } }
-    Conflict: { description: Xung đột tài khoản hoặc trạng thái nghiệp vụ, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ErrorResponse' } } } }
+    BadRequest: { description: Dữ liệu không hợp lệ }
+    Unauthorized: { description: Chưa xác thực }
+    Forbidden: { description: Không có quyền }
+    NotFound: { description: Không tìm thấy tài nguyên }
+    Conflict: { description: Xung đột trạng thái hoặc thao tác lặp }

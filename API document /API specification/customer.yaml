@@ -1,15 +1,20 @@
 openapi: 3.0.3
 info:
-  title: CAB System API - Reporting
+  title: CAB System API - Customer
   version: 1.5.0
-  description: Derived report views; formulas, periods and access details remain OI-09.
+  description: Customer Profile service; does not own Booking, Trip or Payment.
 paths:
-  /reports/activity:
+  /customers/me:
     get:
-      operationId: getActivityReport
-      summary: Báo cáo Trip, revenue, completion, cancellation và dispatch metrics
+      operationId: getCustomerProfile
+      summary: Customer xem profile của mình
       security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Activity report }, '403': { $ref: '#/components/responses/Forbidden' } }
+      responses: { '200': { description: Customer profile }, '401': { $ref: '#/components/responses/Unauthorized' } }
+    patch:
+      operationId: updateCustomerProfile
+      summary: Customer cập nhật profile của mình
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: Updated profile }, '403': { $ref: '#/components/responses/Forbidden' } }
 
 components:
   securitySchemes:

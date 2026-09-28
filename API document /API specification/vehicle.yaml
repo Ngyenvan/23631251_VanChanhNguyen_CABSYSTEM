@@ -1,15 +1,21 @@
 openapi: 3.0.3
 info:
-  title: CAB System API - Reporting
+  title: CAB System API - Vehicle
   version: 1.5.0
-  description: Derived report views; formulas, periods and access details remain OI-09.
+  description: Vehicle service owns vehicle information and Driver-Vehicle relation.
 paths:
-  /reports/activity:
-    get:
-      operationId: getActivityReport
-      summary: Báo cáo Trip, revenue, completion, cancellation và dispatch metrics
+  /drivers/me/vehicle:
+    patch:
+      operationId: updateDriverVehicle
+      summary: Driver cập nhật phương tiện
       security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Activity report }, '403': { $ref: '#/components/responses/Forbidden' } }
+      responses: { '200': { description: Vehicle updated }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /operations/vehicles:
+    get:
+      operationId: listOperationalVehicles
+      summary: Operations Staff tra cứu phương tiện theo quyền
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: Vehicle list }, '403': { $ref: '#/components/responses/Forbidden' } }
 
 components:
   securitySchemes:

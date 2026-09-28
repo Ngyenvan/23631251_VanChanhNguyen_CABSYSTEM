@@ -1,8 +1,6 @@
-# Test Case — Reporting
+# Test Case - Reporting
 
-| ID | Tiền điều kiện và thao tác | Kết quả mong đợi | Trace |
+| ID | Tiền điều kiện và thao tác | Kết quả mong đợi | Trace SRS |
 | --- | --- | --- | --- |
-| TC-REP-01 | Dữ liệu mẫu có Trip và Dispatch Session trong kỳ. | Báo cáo trả số Trip và số session. | FR-51 |
-| TC-REP-02 | Dữ liệu mẫu có doanh thu, Trip hoàn thành và hủy. | Báo cáo trả doanh thu, tỷ lệ hoàn thành và tỷ lệ hủy; công thức/kỳ dùng định nghĩa ABC khi có. | FR-52–FR-54, OI-09 |
-| TC-REP-03 | Dữ liệu mẫu có kết quả offer/session/retry/recovery. | Có hiệu quả Driver và các chỉ số confirmation, no-driver, retry, recovery. | FR-55 |
-| TC-REP-04 | Người không có quyền khai thác báo cáo. | `403`; không lộ dữ liệu báo cáo. | FR-57 |
+| TC-REP-01 | Dữ liệu mẫu có Trip và Dispatch Session. | Báo cáo có số Trip và session. | FR-51 |
+| TC-REP-02 | Dữ liệu mẫu có fare/payment/cancel/retry/recovery. | Các chỉ số có thể truy xuất theo định nghĩa ABC khi được chốt. | FR-52 đến FR-55 |

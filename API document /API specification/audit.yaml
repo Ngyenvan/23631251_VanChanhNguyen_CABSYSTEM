@@ -1,15 +1,21 @@
 openapi: 3.0.3
 info:
-  title: CAB System API - Reporting
+  title: CAB System API - Audit
   version: 1.5.0
-  description: Derived report views; formulas, periods and access details remain OI-09.
+  description: Immutable audit entries for important decisions/actions, queried only under permission.
 paths:
-  /reports/activity:
+  /audit-entries:
     get:
-      operationId: getActivityReport
-      summary: Báo cáo Trip, revenue, completion, cancellation và dispatch metrics
+      operationId: listAuditEntries
+      summary: Operations Staff tra cứu audit theo quyền
       security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Activity report }, '403': { $ref: '#/components/responses/Forbidden' } }
+      responses: { '200': { description: Audit entries }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /internal/audit-entries:
+    post:
+      operationId: recordAuditableFact
+      summary: Source service ghi nhận fact audit đã xảy ra
+      security: [{ bearerAuth: [] }]
+      responses: { '202': { description: Audit fact accepted } }
 
 components:
   securitySchemes:
