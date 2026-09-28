@@ -1,30 +1,13 @@
-# CAB System Final Test Cases - payments
+# Test Case — Fare and payment
 
-**Basis:** generated directly from `../api/payments.yaml` after Phase 6 validation. Test cases do not introduce business rules not present in the YAML/requirement trace.
-
-## API coverage
-
-| Test Case ID | operationId | Method / Path | Coverage | Test basis / steps | Expected result | Requirement trace |
-| --- | --- | --- | --- | --- | --- | --- |
-| TC-PAY-001 | createPayment | POST /rides/{ride_id}/payments | Success | Payload conforms to the request schema referenced by the operation. | HTTP 201; response matches documented schema; no unconfirmed policy is inferred. | UC: UC10; FR: FR26, FR27, FR28, FR29; BR: BR09, BR10 |
-| TC-PAY-002 | createPayment | POST /rides/{ride_id}/payments | Validation / reject | Send a request that violates an explicit OpenAPI required/type/enum/path/query constraint. | HTTP 400 with ErrorResponse; no state-changing success result is produced. Dữ liệu yêu cầu không hợp lệ | UC: UC10; FR: FR26, FR27, FR28, FR29; BR: BR09, BR10 |
-| TC-PAY-003 | createPayment | POST /rides/{ride_id}/payments | Authentication | Omit or invalidate the credential/signature required by the operation. | HTTP 401 with ErrorResponse. Chưa xác thực hoặc thông tin xác thực không hợp lệ | UC: UC10; FR: FR26, FR27, FR28, FR29; BR: BR09, BR10 |
-| TC-PAY-004 | createPayment | POST /rides/{ride_id}/payments | Authorization | Authenticate as a caller outside the documented actor/authorization boundary. | HTTP 403 with ErrorResponse. Không có quyền thực hiện thao tác | UC: UC10; FR: FR26, FR27, FR28, FR29; BR: BR09, BR10 |
-| TC-PAY-005 | createPayment | POST /rides/{ride_id}/payments | Not found | Use a syntactically valid identifier that does not resolve to an accessible resource. | HTTP 404 with ErrorResponse. Không tìm thấy tài nguyên | UC: UC10; FR: FR26, FR27, FR28, FR29; BR: BR09, BR10 |
-| TC-PAY-006 | createPayment | POST /rides/{ride_id}/payments | Business/state conflict | Create the conflict described by the endpoint contract (for example invalid lifecycle state, expired request, or idempotency conflict). | HTTP 409 with ErrorResponse; state is not silently advanced. Xung đột trạng thái nghiệp vụ hoặc idempotency | UC: UC10; FR: FR26, FR27, FR28, FR29; BR: BR09, BR10 |
-| TC-PAY-007 | createPayment | POST /rides/{ride_id}/payments | Dependency/service failure | Make a required downstream dependency unavailable without changing the business input. | HTTP 503 with ErrorResponse; infrastructure failure is not converted into a business outcome. Dependency/service tạm thời không khả dụng; không được chuyển thành kết quả nghiệp vụ giả | UC: UC10; FR: FR26, FR27, FR28, FR29; BR: BR09, BR10 |
-| TC-PAY-008 | paymentCallback | POST /payments/callback | Success | Payload conforms to the request schema referenced by the operation. | HTTP 200; response matches documented schema; no unconfirmed policy is inferred. | UC: UC10; FR: FR27, FR28, FR29, FR30; BR: BR09, BR10 |
-| TC-PAY-009 | paymentCallback | POST /payments/callback | Validation / reject | Send a request that violates an explicit OpenAPI required/type/enum/path/query constraint. | HTTP 400 with ErrorResponse; no state-changing success result is produced. Callback payload không hợp lệ | UC: UC10; FR: FR27, FR28, FR29, FR30; BR: BR09, BR10 |
-| TC-PAY-010 | paymentCallback | POST /payments/callback | Authentication | Omit or invalidate the credential/signature required by the operation. | HTTP 401 with ErrorResponse. Không xác thực được callback provider | UC: UC10; FR: FR27, FR28, FR29, FR30; BR: BR09, BR10 |
-| TC-PAY-011 | paymentCallback | POST /payments/callback | Not found | Use a syntactically valid identifier that does not resolve to an accessible resource. | HTTP 404 with ErrorResponse. Không tìm thấy payment | UC: UC10; FR: FR27, FR28, FR29, FR30; BR: BR09, BR10 |
-| TC-PAY-012 | paymentCallback | POST /payments/callback | Business/state conflict | Create the conflict described by the endpoint contract (for example invalid lifecycle state, expired request, or idempotency conflict). | HTTP 409 with ErrorResponse; state is not silently advanced. Callback xung đột/không khớp amount | UC: UC10; FR: FR27, FR28, FR29, FR30; BR: BR09, BR10 |
-| TC-PAY-013 | listPayments | GET /payments | Success | Use valid path/query parameters defined by the operation. | HTTP 200; response matches documented schema; no unconfirmed policy is inferred. | UC: UC13; FR: FR39; BR: BR13 |
-| TC-PAY-014 | listPayments | GET /payments | Validation / reject | Send a request that violates an explicit OpenAPI required/type/enum/path/query constraint. | HTTP 400 with ErrorResponse; no state-changing success result is produced. Dữ liệu yêu cầu không hợp lệ | UC: UC13; FR: FR39; BR: BR13 |
-| TC-PAY-015 | listPayments | GET /payments | Authentication | Omit or invalidate the credential/signature required by the operation. | HTTP 401 with ErrorResponse. Chưa xác thực hoặc thông tin xác thực không hợp lệ | UC: UC13; FR: FR39; BR: BR13 |
-| TC-PAY-016 | listPayments | GET /payments | Authorization | Authenticate as a caller outside the documented actor/authorization boundary. | HTTP 403 with ErrorResponse. Không có quyền thực hiện thao tác | UC: UC13; FR: FR39; BR: BR13 |
-
-## Business branch coverage
-
-| Test Case ID | operationId | Branch | Test basis / steps | Expected result | Requirement trace |
-| --- | --- | --- | --- | --- | --- |
-| TC-PAY-BIZ-FAILED | paymentCallback | Electronic payment failed | Send an authenticated provider callback with a valid FAILED result for an existing electronic payment. | Payment result is recorded as failed and customer notification is requested; retry timing/count is not asserted. | UC10; FR29, FR30; BR10; OI-P1-001/006 |
+| ID | Tiền điều kiện và thao tác | Kết quả mong đợi | Trace |
+| --- | --- | --- | --- |
+| TC-PAY-01 | Trip hoàn thành, CAB System xác định cước rồi Customer xem cước. | Có số tiền phải trả gắn đúng Trip. Không kiểm tra công thức cước. | FR-28, FR-29 |
+| TC-PAY-02 | Customer chọn CASH cho Trip hoàn thành. | Giao dịch chờ Driver xác nhận; chưa là thanh toán hoàn thành. | FR-30 |
+| TC-PAY-03 | Driver đúng của Trip xác nhận đã nhận tiền CASH. | Giao dịch được ghi nhận hoàn thành và Customer nhận thông báo kết quả. | FR-30, FR-39 |
+| TC-PAY-04 | Customer chọn ELECTRONIC cho Trip hoàn thành. | Tạo xử lý qua External Payment Provider, không lưu trực tiếp thông tin thẻ/tài khoản nhạy cảm. | FR-31, BRULE-07 |
+| TC-PAY-05 | Provider gửi callback SUCCESS hợp lệ rồi gửi trùng cùng callback. | Kết quả cuối cùng chỉ được ghi nhận một lần; callback trùng trả trạng thái đã lưu, không tạo giao dịch/thông báo thứ hai. | FR-32, FR-39 |
+| TC-PAY-06 | Provider gửi callback mâu thuẫn hoặc muộn sau khi Payment đã có kết quả cuối cùng. | `409` hoặc trạng thái cuối giữ nguyên; không đảo kết quả đã chốt. | FR-32 |
+| TC-PAY-07 | Provider trả FAILED. | Payment thất bại được ghi nhận và Customer nhận thông báo thất bại. | FR-33, FR-39 |
+| TC-PAY-08 | Payment điện tử thất bại; Customer bắt đầu xử lý lại trên cùng Trip. | Cho phép tạo lần xử lý mới trên cùng Trip theo chính sách ABC; không khẳng định điều kiện hay số lần retry. | FR-34, BRULE-08 |
+| TC-PAY-09 | Payment thất bại nhưng Trip đã hoàn thành. Customer xem lịch sử và gửi đánh giá. | Lịch sử/đánh giá vẫn khả dụng, không phụ thuộc thanh toán thành công. | FR-41, FR-42 |
