@@ -1,30 +1,15 @@
-# CAB System Final Test Cases - driver-requests
+# Test Case — Automatic dispatch
 
-**Basis:** generated directly from `../api/driver-requests.yaml` after Phase 6 validation. Test cases do not introduce business rules not present in the YAML/requirement trace.
-
-## API coverage
-
-| Test Case ID | operationId | Method / Path | Coverage | Test basis / steps | Expected result | Requirement trace |
-| --- | --- | --- | --- | --- | --- | --- |
-| TC-DISP-001 | sendDriverRequests | POST /rides/{ride_id}/driver-requests | Success | Use valid path/query parameters defined by the operation. | HTTP 202; response matches documented schema; no unconfirmed policy is inferred. | UC: UC05; FR: FR11, FR12, FR13, FR15, FR16; BR: BR04, BR05, BR11 |
-| TC-DISP-002 | sendDriverRequests | POST /rides/{ride_id}/driver-requests | Validation / reject | Send a request that violates an explicit OpenAPI required/type/enum/path/query constraint. | HTTP 400 with ErrorResponse; no state-changing success result is produced. Dữ liệu yêu cầu không hợp lệ | UC: UC05; FR: FR11, FR12, FR13, FR15, FR16; BR: BR04, BR05, BR11 |
-| TC-DISP-003 | sendDriverRequests | POST /rides/{ride_id}/driver-requests | Authentication | Omit or invalidate the credential/signature required by the operation. | HTTP 401 with ErrorResponse. Chưa xác thực hoặc thông tin xác thực không hợp lệ | UC: UC05; FR: FR11, FR12, FR13, FR15, FR16; BR: BR04, BR05, BR11 |
-| TC-DISP-004 | sendDriverRequests | POST /rides/{ride_id}/driver-requests | Authorization | Authenticate as a caller outside the documented actor/authorization boundary. | HTTP 403 with ErrorResponse. Không có quyền thực hiện thao tác | UC: UC05; FR: FR11, FR12, FR13, FR15, FR16; BR: BR04, BR05, BR11 |
-| TC-DISP-005 | sendDriverRequests | POST /rides/{ride_id}/driver-requests | Not found | Use a syntactically valid identifier that does not resolve to an accessible resource. | HTTP 404 with ErrorResponse. Không tìm thấy tài nguyên | UC: UC05; FR: FR11, FR12, FR13, FR15, FR16; BR: BR04, BR05, BR11 |
-| TC-DISP-006 | sendDriverRequests | POST /rides/{ride_id}/driver-requests | Business/state conflict | Create the conflict described by the endpoint contract (for example invalid lifecycle state, expired request, or idempotency conflict). | HTTP 409 with ErrorResponse; state is not silently advanced. Xung đột trạng thái nghiệp vụ hoặc idempotency | UC: UC05; FR: FR11, FR12, FR13, FR15, FR16; BR: BR04, BR05, BR11 |
-| TC-DISP-007 | sendDriverRequests | POST /rides/{ride_id}/driver-requests | Dependency/service failure | Make a required downstream dependency unavailable without changing the business input. | HTTP 503 with ErrorResponse; infrastructure failure is not converted into a business outcome. Dependency/service tạm thời không khả dụng; không được chuyển thành kết quả nghiệp vụ giả | UC: UC05; FR: FR11, FR12, FR13, FR15, FR16; BR: BR04, BR05, BR11 |
-| TC-DISP-008 | respondToDriverRequest | POST /driver-requests/{request_id}/respond | Success | Payload conforms to the request schema referenced by the operation. | HTTP 200; response matches documented schema; no unconfirmed policy is inferred. | UC: UC06; FR: FR14, FR15, FR17; BR: BR05, BR06 |
-| TC-DISP-009 | respondToDriverRequest | POST /driver-requests/{request_id}/respond | Validation / reject | Send a request that violates an explicit OpenAPI required/type/enum/path/query constraint. | HTTP 400 with ErrorResponse; no state-changing success result is produced. Dữ liệu yêu cầu không hợp lệ | UC: UC06; FR: FR14, FR15, FR17; BR: BR05, BR06 |
-| TC-DISP-010 | respondToDriverRequest | POST /driver-requests/{request_id}/respond | Authentication | Omit or invalidate the credential/signature required by the operation. | HTTP 401 with ErrorResponse. Chưa xác thực hoặc thông tin xác thực không hợp lệ | UC: UC06; FR: FR14, FR15, FR17; BR: BR05, BR06 |
-| TC-DISP-011 | respondToDriverRequest | POST /driver-requests/{request_id}/respond | Authorization | Authenticate as a caller outside the documented actor/authorization boundary. | HTTP 403 with ErrorResponse. Không có quyền thực hiện thao tác | UC: UC06; FR: FR14, FR15, FR17; BR: BR05, BR06 |
-| TC-DISP-012 | respondToDriverRequest | POST /driver-requests/{request_id}/respond | Not found | Use a syntactically valid identifier that does not resolve to an accessible resource. | HTTP 404 with ErrorResponse. Không tìm thấy tài nguyên | UC: UC06; FR: FR14, FR15, FR17; BR: BR05, BR06 |
-| TC-DISP-013 | respondToDriverRequest | POST /driver-requests/{request_id}/respond | Business/state conflict | Create the conflict described by the endpoint contract (for example invalid lifecycle state, expired request, or idempotency conflict). | HTTP 409 with ErrorResponse; state is not silently advanced. Xung đột trạng thái nghiệp vụ hoặc idempotency | UC: UC06; FR: FR14, FR15, FR17; BR: BR05, BR06 |
-
-## Business branch coverage
-
-| Test Case ID | operationId | Branch | Test basis / steps | Expected result | Requirement trace |
-| --- | --- | --- | --- | --- | --- |
-| TC-DISP-BIZ-ACCEPT | respondToDriverRequest | Accept branch | Submit decision ACCEPTED for an active driver request. | Response is accepted and the driver/trip assignment outcome is recorded; trip can progress to assigned state. | UC06; FR14, FR17; BR05, BR06 |
-| TC-DISP-BIZ-REJECT | respondToDriverRequest | Reject branch | Submit decision DECLINED for an active driver request. | Decline is recorded and matching continues to another suitable driver without requiring a new customer booking. | UC06; FR14, FR15; BR05 |
-| TC-DISP-BIZ-TIMEOUT | respondToDriverRequest | Non-response / timeout branch | Allow the configured-but-unconfirmed response window to expire, then submit a response. Do not assert a numeric duration. | Late/expired response is rejected as a conflict and matching continues. Numeric timeout remains OPEN ISSUE. | UC05, UC06; FR15; BR05; OI-P1-003 |
-| TC-DISP-BIZ-NODRIVER | sendDriverRequests | No-driver branch | Run dispatch until no suitable driver remains under the approved criteria. Do not hard-code radius/ranking/search duration. | Business outcome is no-driver; customer is notified through the trip/notification flow. Infrastructure outage must not be reported as no-driver. | UC05; FR16; BR04, BR05, BR11; OI-P1-002/004 |
+| ID | Tiền điều kiện và thao tác | Kết quả mong đợi | Trace |
+| --- | --- | --- | --- |
+| TC-DISP-01 | Mở PRIMARY Session cho Booking có hơn 20 Driver hợp lệ, chưa được mời. | Round 1 mời đồng thời không quá 20 Driver; session ghi nhận ảnh chụp vị trí của round. | FR-13–FR-15, BRULE-10, BRULE-12 |
+| TC-DISP-02 | Trộn Driver sẵn sàng/có Trip/vị trí cũ quá 60 giây. | Chỉ Driver sẵn sàng, không Trip và vị trí mới được mời. | FR-13, BRULE-12 |
+| TC-DISP-03 | Một Driver từ chối offer còn hiệu lực; còn Driver chưa mời và session chưa đủ 3 round. | Từ chối được lưu, CAB System tự tiếp tục điều phối trên Booking hiện có. | FR-17, BRULE-04, BRULE-10 |
+| TC-DISP-04 | Không Driver nào phản hồi offer trong 20 giây. | Offer hết hiệu lực; CAB System mở round kế tiếp nếu còn round. | FR-18, BRULE-10 |
+| TC-DISP-05 | Driver trả lời offer sau 20 giây. | `409`; không được chọn Driver, offer vẫn hết hiệu lực. | FR-16, FR-18, BRULE-10 |
+| TC-DISP-06 | Hai hoặc nhiều accept đến trong một cửa sổ 1 giây đầu tiên. | Chọn Driver gần pickup nhất theo ảnh chụp vị trí round; nếu bằng nhau chọn phản hồi CAB System nhận trước; offer khác hết hiệu lực. | FR-14, FR-16, BRULE-11 |
+| TC-DISP-07 | Accept hợp lệ đến sau cửa sổ 1 giây đã đóng bởi accept đầu tiên. | Không thay đổi Driver đã được CAB System chọn. | FR-16, BRULE-11 |
+| TC-DISP-08 | Hết một round mà không có Driver được xác nhận; chuyển round mới. | Không mời lại bất cứ Driver nào đã mời trong cùng session. | FR-14, FR-17, FR-18, BRULE-10 |
+| TC-DISP-09 | Ba round đều kết thúc không có Driver xác nhận. | Session kết thúc no-driver; Customer được thông báo và Booking khóa retry 10 giây. | FR-19, FR-36, BRULE-10, BRULE-13 |
+| TC-DISP-10 | Ops Staff truy cập session điều phối. | Chỉ xem/giám sát theo quyền; không có endpoint hay khả năng gán Driver bằng tay. | FR-47, FR-49, BRULE-14 |
+| TC-DISP-11 | RECOVERY Session khởi tạo sau báo không thể phục vụ. | Có tối đa 3 round với quy tắc y hệt PRIMARY; Driver báo lỗi bị loại khỏi session. | FR-59, BRULE-10, BRULE-14 |
