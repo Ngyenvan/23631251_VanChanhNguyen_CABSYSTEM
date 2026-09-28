@@ -9,7 +9,23 @@ Tài liệu này là thiết kế kỹ thuật theo `srs.md` v1.5. SRS quyết �
 - `dispatch-service` là owner duy nhất của Session, Round, Offer và quyết định Driver. Operations Staff không gán Driver thủ công.
 - Consumer event idempotent theo `event_id`; event chứa `event_type`, `occurred_at`, `aggregate_id`, `correlation_id`, `causation_id` và payload tối thiểu.
 
-## 2. Bounded Context và service
+## 2. Phân tách Use Case theo miền nghiệp vụ
+
+Use Case được nhóm theo năng lực nghiệp vụ để xác định ownership. Một Use Case có thể đi qua nhiều service, nhưng mỗi trạng thái và dữ liệu nghiệp vụ chỉ có một owner ghi dữ liệu.
+
+| Miền nghiệp vụ | Use Case SRS | Service owner / tham gia | Lý do phân tách |
+| --- | --- | --- | --- |
+| Tài khoản Customer | UC-01, UC-02, UC-15 | `auth-service`, `customer-service` | Account/credential khác với Customer Profile. |
+| Driver và phương tiện | UC-03, UC-04, UC-16, UC-17, UC-18 | `auth-service`, `driver-service`, `vehicle-service` | Identity, hồ sơ/trạng thái/vị trí và phương tiện có ownership riêng. |
+| Booking và điều phối | UC-05, UC-06, UC-07 | `booking-service`, `dispatch-service`, `notification-service` | Booking giữ yêu cầu/retry/hủy; Dispatch giữ Session/Round/Offer/chọn Driver. |
+| Thực hiện Trip | UC-07, UC-08 | `trip-service`, `notification-service` | Trip là owner duy nhất của các mốc arrived, picked up, in progress, completed và lịch sử. |
+| Cước và thanh toán | UC-09 | `pricing-service`, `payment-service` | Fare chỉ có sau Trip hoàn thành; Payment sở hữu chọn phương thức và kết quả giao dịch. |
+| Lịch sử và đánh giá | UC-10, UC-11 | `trip-service`, `rating-service` | Lịch sử lấy từ Trip owner; Rating có vòng đời và quyền riêng. |
+| Vận hành và giao dịch | UC-12, UC-13 | `operations-service`, các service owner, `audit-service` | Operations chỉ gửi command/tra cứu theo quyền, không ghi dữ liệu nguồn hay gán Driver tay. |
+| Báo cáo | UC-14 | `reporting-service` | Read model từ event, không thay đổi dữ liệu nguồn. |
+| Thông báo và audit | FR-35 đến FR-40, FR-58 | `notification-service`, `audit-service` | Là consumer xuyên miền, tách khỏi luồng ghi trạng thái lõi. |
+
+## 3. Bounded Context và service
 
 | Context | Service | Dữ liệu owner | Trách nhiệm |
 | --- | --- | --- | --- |
@@ -28,13 +44,13 @@ Tài liệu này là thiết kế kỹ thuật theo `srs.md` v1.5. SRS quyết �
 | Reporting | `reporting-service` | Reporting View | Read model báo cáo. |
 | Audit | `audit-service` | Audit Entry | Audit trail bất biến và tra cứu theo quyền. |
 
-## 3. Quyết định ranh giới dữ liệu
+## 4. Quyết định ranh giới dữ liệu
 
 Vị trí Driver thuộc `driver-service`: Driver cập nhật vị trí tại đúng context hồ sơ/sẵn sàng, còn Dispatch nhận fact qua API hoặc projection/event `driver.location.updated`. Điều này tránh thêm network hop trong phạm vi hiện tại nhưng vẫn cho phép tách `location-service` khi cần mà không đổi hợp đồng event.
 
 Audit thuộc `audit-service`, không gộp vào Operations. Operations là nơi người dùng vận hành làm việc, còn audit là bằng chứng độc lập về thao tác/quyết định. `audit-service` chỉ nhận event đã phát từ owner và không thay đổi dữ liệu nguồn.
 
-## 4. Quy tắc điều phối và aggregate
+## 5. Quy tắc điều phối và aggregate
 
 | Aggregate | Owner | Invariant |
 | --- | --- | --- |
@@ -48,7 +64,7 @@ Audit thuộc `audit-service`, không gộp vào Operations. Operations là nơi
 
 Driver hợp lệ để Dispatch xét mời phải sẵn sàng, không có Trip đang thực hiện và có vị trí mới không quá 60 giây. Sau 3 round thất bại, Booking no-driver và khóa retry 10 giây. Driver đã xác nhận nhưng báo không thể phục vụ trước pickup chỉ kích hoạt tối đa một RECOVERY session và bị loại khỏi session đó.
 
-## 5. Context map và event
+## 6. Context map và event
 
 `booking-service` phát `booking.submitted` hoặc `booking.retry.requested` cho Dispatch. `dispatch-service` đọc/xác minh fact Driver, phát trạng thái Session/Offer/Driver confirmed cho Booking, Trip, Notification, Operations, Reporting và Audit. `trip-service` phát mốc Trip và `trip.completed`; Pricing tính Fare, Payment xử lý phương thức/kết quả, còn Notification/Reporting/Audit là consumer độc lập.
 
@@ -64,7 +80,7 @@ Driver hợp lệ để Dispatch xét mời phải sẵn sàng, không có Trip 
 | `payment.method.selected`, `payment.cash-confirmed`, `payment.electronic-retry-requested`, `payment.electronic-finalized` | payment | notification, reporting, audit | Thanh toán và kết quả cuối. |
 | `rating.created` | rating | reporting, audit | Rating hợp lệ. |
 
-## 6. API, security và traceability
+## 7. API, security và traceability
 
 API public đi qua Gateway và mọi service owner kiểm tra token/quyền trên tài nguyên. Operations gửi command đến owner thay vì ghi database khác; truy vấn audit đi đến `audit-service`. Payment Provider chỉ giao tiếp với Payment qua adapter/callback đã xác thực. Không lưu trực tiếp số thẻ hoặc tài khoản thanh toán nhạy cảm.
 
