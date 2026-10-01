@@ -8,13 +8,13 @@
 | --- | --- |
 | Mã tài liệu | CAB-SRS |
 | Tên file | srs.md |
-| Phiên bản | 1.5 |
+| Phiên bản | 1.6 |
 | Trạng thái | Dự thảo để xem xét — Chưa phê duyệt |
-| Ngày cập nhật | 28/09/2026 |
+| Ngày cập nhật | 01/10/2026 |
 | Đơn vị sử dụng | Công ty ABC |
 | Đối tượng đọc | Stakeholder, nhóm thiết kế, nhóm phát triển, nhóm kiểm thử, bộ phận vận hành |
 | Thời gian xây dựng và triển khai | 7 tuần |
-| Initial Release Scope | TBD — OI-11 |
+| Initial Release Scope | MVP CAB: tài khoản, Booking, điều phối tự động, Trip, cước, thanh toán, thông báo, lịch sử/đánh giá, vận hành, báo cáo và audit |
 
 ## Mục lục
 
@@ -52,6 +52,7 @@
 | 1.3 | 26/09/2026 | Hiệu chỉnh nguồn giao tiếp thanh toán; làm rõ nghiệp vụ sau khi Trip hoàn thành và phạm vi danh mục actor. |
 | 1.4 | 26/09/2026 | Tách danh mục rủi ro khỏi Open Issue; tinh gọn tiêu chí chấp nhận và làm rõ điều kiện tiên quyết. |
 | 1.5 | 28/09/2026 | Chốt quy trình điều phối tự động theo đợt, thử lại, điều phối phục hồi, hủy và thanh toán sau Trip; đồng bộ trạng thái, use case, ngoại lệ, dữ liệu và nghiệm thu. |
+| 1.6 | 01/10/2026 | Phân biệt yêu cầu Customer với quyết định thiết kế MVP; chốt công thức cước, hậu quả hủy, mất kết nối, lưu trữ và giới hạn thử lại thanh toán để triển khai MVP. |
 
 ## 0.2. Nguồn và tài liệu tham chiếu
 
@@ -91,7 +92,7 @@ Mã định danh có dạng `<PREFIX>-<NN>` và duy nhất trong từng loại.
 | EIR | External Interface Requirement | AC | Acceptance Criterion |
 | RTM | Requirements Traceability Matrix | CON | Constraint |
 | RISK | Risk | — | — |
-| OI | Open Issue | | |
+| OI | Open Issue | MD | MVP Design Decision |
 
 | Phân loại | Ý nghĩa |
 | --- | --- |
@@ -99,11 +100,12 @@ Mã định danh có dạng `<PREFIX>-<NN>` và duy nhất trong từng loại.
 | Derived Requirement | Yêu cầu suy ra có căn cứ; cần xác nhận phần suy ra. |
 | Assumption | Giả định chưa được xác nhận. |
 | Proposal | Phương án đề xuất, chưa được phê duyệt. |
+| MVP Design Decision | Chi tiết nguồn chưa quy định nhưng BA tự xác định để triển khai/demo MVP; không được gán là phát biểu của Customer. |
 | Confirmed Decision | Quyết định nghiệp vụ đã được chốt trong quá trình rà soát SRS; được áp dụng cho các yêu cầu và kiểm chứng liên quan. |
 | TBD / Open Issue | Nội dung chưa có quyết định hoặc thiếu dữ kiện. |
 | Invalid | Nội dung không đủ căn cứ hoặc mâu thuẫn với nguồn; không thuộc tập yêu cầu áp dụng. |
 
-BG, BR, BRULE, FR, NFR, EIR và CON trong các bảng yêu cầu có phân loại **Source-derived**, trừ mục có nhãn khác. BRULE-10 đến BRULE-15, FR-59 và FR-60 có phân loại **Confirmed Decision** ngày 28/09/2026; các FR được cập nhật để áp dụng các quy tắc này cũng tham chiếu rõ BRULE tương ứng. Mô hình chuyển trạng thái tại §7.2 và quan hệ khái niệm tại §9.2 có nhãn **Proposal**. Các mục OI có trạng thái được ghi ngay trong §13. Toàn bộ tài liệu có trạng thái **Dự thảo**; nhãn Source-derived hoặc Confirmed Decision không thay thế việc phê duyệt SRS.
+BG, BR, BRULE, FR, NFR, EIR và CON trong các bảng yêu cầu có phân loại **Source-derived**, trừ mục có nhãn khác. BRULE-10 đến BRULE-15, FR-59 và FR-60 có phân loại **Confirmed Decision** ngày 28/09/2026. MD-01 đến MD-07 và các yêu cầu áp dụng chúng có phân loại **MVP Design Decision** ngày 01/10/2026. Mô hình chuyển trạng thái tại §7.2 và quan hệ khái niệm tại §9.2 là Proposal trừ phần được MD/Confirmed Decision chốt. Các mục OI có trạng thái tại §13. Toàn bộ tài liệu vẫn là dự thảo; nhãn Source-derived, Confirmed Decision hoặc MVP Design Decision không biến quyết định MVP thành phát biểu của Customer.
 
 <a id="s1"></a>
 
@@ -238,16 +240,32 @@ Xử lý giao dịch tại External Payment Provider nằm ngoài CAB System. Gi
 
 ## 2.8. Phạm vi phát hành, giả định và phụ thuộc
 
-**Initial Release Scope: TBD — OI-11.** Product Scope tại §2.5 và phạm vi lần triển khai đầu tiên được quản lý riêng. Mốc bắt đầu thời hạn 7 tuần: TBD.
+**Initial Release Scope:** MVP CAB bao phủ các chức năng trong §2.5 và phải hoàn thành trong thời hạn 7 tuần của nguồn P002. Các chi tiết Customer Requirement nêu là chưa chốt được phép xác định dưới dạng **MVP Design Decision** để có luồng demo hoàn chỉnh; chúng không được trình bày như yêu cầu do Customer phát biểu.
 
 | Nội dung | Trạng thái / phụ thuộc |
 | --- | --- |
 | Quyết định nghiệp vụ đã chốt | Điều phối tự động 3 đợt × tối đa 20 Driver, phản hồi 20 giây, cửa sổ đồng thời 1 giây, vị trí điều phối không quá 60 giây, thử lại sau 10 giây, một phiên phục hồi, quy tắc hủy và thanh toán sau Trip — §4, §5. |
-| Chính sách còn mở | Cước, phí/hệ quả hủy, mất kết nối, lưu trữ và giới hạn xử lý lại thanh toán — OI-01, OI-04–OI-07. |
+| Quyết định thiết kế MVP | Cước, điều phối Driver, phản hồi Driver, hủy, mất kết nối, lưu trữ và xử lý lại thanh toán được chốt tại §2.9; có thể thay đổi khi ABC ban hành chính sách chính thức. |
 | Thanh toán điện tử | Phụ thuộc nhà cung cấp và hợp đồng giao tiếp được lựa chọn — OI-17. |
 | Vị trí và ước tính thời gian đến | Phụ thuộc nguồn dữ liệu và phương pháp được xác nhận — OI-19. |
 | Kênh thông báo | Phụ thuộc kênh/nhà cung cấp được xác nhận — OI-12. |
 | Tiêu chí nghiệm thu định lượng | Phụ thuộc mục tiêu chất lượng và định nghĩa chỉ số — OI-09, OI-13. |
+
+## 2.9. Phân loại khoảng trống và quyết định thiết kế MVP
+
+Customer Requirement xác nhận nhu cầu tính cước, ưu tiên Driver, xử lý phản hồi, hủy, mất kết nối và lưu trữ nhưng không quy định chi tiết. Trong phạm vi MVP, BA được phép đề xuất các giá trị dưới đây để phát triển và demo. Mỗi mục được gắn nhãn **MVP Design Decision**, không phải **Source-derived**. Khi Công ty ABC ban hành chính sách khác, cấu hình hoặc rule tương ứng phải được thay thế mà không làm thay đổi ranh giới nghiệp vụ.
+
+| ID | Khoảng trống từ Customer Requirement | Quyết định thiết kế MVP |
+| --- | --- | --- |
+| MD-01 | Công thức và dữ liệu tính cước | Ba loại xe MVP: `MOTORBIKE`, `CAR_4`, `CAR_7`. Cước = cước mở cửa + phần quãng đường vượt 2 km × đơn giá/km. MOTORBIKE: 12.000 VND + 4.500 VND/km; CAR_4: 25.000 VND + 11.000 VND/km; CAR_7: 30.000 VND + 13.000 VND/km. Kết quả làm tròn lên 1.000 VND; không có giá động, khuyến mại, phí chờ hoặc phí cầu đường trong MVP. |
+| MD-02 | Tiêu chí ưu tiên Driver | Driver hợp lệ khi đang sẵn sàng, không có Trip đang thực hiện và vị trí không cũ quá 60 giây. Mỗi Round chụp Candidate Snapshot và xếp khoảng cách tăng dần; không thêm trọng số khác trong MVP. |
+| MD-03 | Thời gian và cơ chế phản hồi | Mỗi Session tối đa 3 Round; mỗi Round mời đồng thời tối đa 20 Driver trong 20 giây. Các accept trong cửa sổ 1 giây được chọn theo khoảng cách snapshot, sau đó theo thời điểm hệ thống nhận. |
+| MD-04 | Chính sách hủy | Customer được hủy khi đang điều phối hoặc sau khi có Driver nhưng trước `PICKED_UP`; MVP không thu phí hủy và không tạo Payment. Sau `PICKED_UP`, ứng dụng từ chối hủy trực tiếp. |
+| MD-05 | Mất kết nối | Server giữ trạng thái đã ghi bền vững cuối cùng. Offer vẫn hết hạn theo thời gian server; location cũ quá 60 giây không dùng cho điều phối. Command cập nhật Trip dùng idempotency key và được client gửi lại sau reconnect; hệ thống không tự suy diễn mốc Trip. |
+| MD-06 | Thời gian lưu trữ | Driver Location thô: 30 ngày; Notification Delivery: 90 ngày; Booking, Dispatch, Trip, Fare, Payment, Rating và Audit: 24 tháng; profile/account được giữ khi còn hoạt động và 24 tháng sau khi vô hiệu hóa. Hết hạn được xóa hoặc ẩn danh theo job định kỳ, trừ dữ liệu đang bị giữ để xử lý sự cố. |
+| MD-07 | Xử lý lại thanh toán điện tử | Mỗi Trip có tối đa 3 Payment Attempt điện tử, gồm lần đầu và tối đa 2 lần thử lại. Mỗi Attempt có idempotency key/provider reference riêng; callback trùng hoặc muộn không được tạo kết quả cuối thứ hai. |
+
+Quãng đường đầu vào của MD-01 là `route_distance_km` được Trip ghi nhận khi hoàn thành. Nếu thiếu quãng đường hợp lệ, Trip vẫn giữ trạng thái hoàn thành nhưng Fare chuyển `CALCULATION_PENDING` để Operations kiểm tra; hệ thống không tự tạo số tiền giả định.
 
 <a id="s3"></a>
 
@@ -326,7 +344,7 @@ flowchart TD
     M --> T["Customer xem lịch sử / đánh giá"]
 ```
 
-Customer được hủy Booking khi đang điều phối hoặc hủy Trip sau khi Driver xác nhận nhưng trước khi Driver cập nhật đã đón Customer; hệ thống thu hồi đề xuất đang mở hoặc thông báo Driver tương ứng. Sau khi đã đón Customer, ứng dụng không hỗ trợ hủy trực tiếp Trip. Phí/hệ quả tài chính của hủy vẫn là chính sách cần xác nhận tại OI-04.
+Customer được hủy Booking khi đang điều phối hoặc hủy Trip sau khi Driver xác nhận nhưng trước khi Driver cập nhật đã đón Customer; hệ thống thu hồi đề xuất đang mở hoặc thông báo Driver tương ứng. Sau khi đã đón Customer, ứng dụng không hỗ trợ hủy trực tiếp Trip. Trong MVP, lần hủy hợp lệ không phát sinh phí và không tạo Payment theo MD-04.
 
 <a id="s5"></a>
 
@@ -338,17 +356,21 @@ Customer được hủy Booking khi đang điều phối hoặc hủy Trip sau k
 | BRULE-02 | Thao tác quản trị phải được kiểm soát quyền; nhân viên thông thường không được thực hiện thao tác nhạy cảm ngoài quyền được cấp. | BR-19 | P009, P011 | OI-08 |
 | BRULE-03 | Việc tìm Driver dựa trên vị trí, trạng thái sẵn sàng và tiêu chí vận hành; ưu tiên Driver phù hợp và gần Customer. | BR-04 | P006 | OI-02 |
 | BRULE-04 | Driver từ chối hoặc không phản hồi không yêu cầu Customer tạo lại Booking; việc tìm Driver khác tiếp tục trên yêu cầu hiện có. | BR-05 | P006 | OI-03 |
-| BRULE-05 | Số tiền phải trả được xác định sau khi Trip hoàn thành, dựa trên loại dịch vụ và thông tin Trip. | BR-08 | P007 | OI-01, OI-15 |
+| BRULE-05 | Số tiền phải trả được xác định sau khi Trip hoàn thành, dựa trên loại dịch vụ và thông tin Trip. | BR-08 | P007 | MD-01 |
 | BRULE-06 | Customer được đánh giá Driver sau khi Trip hoàn thành. | BR-11 | P004 | OI-10 |
 | BRULE-07 | Thông tin nhạy cảm của thẻ hoặc tài khoản thanh toán không được lưu trực tiếp trong CAB System. | BR-20 | P007 | OI-17 |
-| BRULE-08 | Customer được thông báo khi thanh toán điện tử thất bại; xử lý lại thực hiện theo chính sách ABC. | BR-09 | P007 | OI-07 |
-| BRULE-09 | Các thao tác quan trọng phải được lưu vết phục vụ kiểm tra sự cố. | BR-21 | P011 | OI-06, OI-16 |
+| BRULE-08 | Customer được thông báo khi thanh toán điện tử thất bại; trong MVP được xử lý lại theo MD-07. | BR-09 | P007; MVP Design Decision | MD-07 |
+| BRULE-09 | Các thao tác quan trọng phải được lưu vết phục vụ kiểm tra sự cố. | BR-21 | P011 | MD-06, OI-16 |
 | BRULE-10 | Một phiên điều phối có tối đa 3 đợt; mỗi đợt mời đồng thời tối đa 20 Driver hợp lệ, chờ phản hồi tối đa 20 giây và không mời lại Driver đã được mời trong cùng phiên. | BR-04, BR-05 | Quyết định đã chốt 28/09/2026 | — |
 | BRULE-11 | Nếu nhiều phản hồi chấp nhận đến trong cửa sổ 1 giây, chọn Driver gần điểm đón nhất theo ảnh chụp vị trí của đợt; nếu vẫn bằng nhau, chọn phản hồi CAB System nhận trước. | BR-04, BR-06 | Quyết định đã chốt 28/09/2026 | — |
 | BRULE-12 | Driver chỉ hợp lệ để điều phối khi sẵn sàng, không có Trip đang thực hiện và vị trí được cập nhật không quá 60 giây. | BR-02, BR-04 | Quyết định đã chốt 28/09/2026 | — |
 | BRULE-13 | Sau khi phiên thất bại, Customer được sửa thông tin và gửi thử lại sau thời gian khóa 10 giây; lần thử lại mở phiên mới thuộc Booking hiện có. | BR-03, BR-05 | Quyết định đã chốt 28/09/2026 | — |
 | BRULE-14 | Driver đã xác nhận nhưng không thể phục vụ trước khi đón Customer kích hoạt tối đa một phiên điều phối phục hồi tự động cho Booking; Operations Staff không điều phối thay. | BR-05, BR-06, BR-12 | Quyết định đã chốt 28/09/2026 | — |
-| BRULE-15 | Customer chỉ hủy được trước khi Driver cập nhật đã đón Customer; sau mốc này Trip không hủy trực tiếp trên ứng dụng. | BR-03, BR-06 | Quyết định đã chốt 28/09/2026 | OI-04 (hệ quả tài chính) |
+| BRULE-15 | Customer chỉ hủy được trước khi Driver cập nhật đã đón Customer; sau mốc này Trip không hủy trực tiếp trên ứng dụng. MVP không thu phí cho lần hủy hợp lệ trước `PICKED_UP`. | BR-03, BR-06 | Quyết định đã chốt 28/09/2026; MD-04 | — |
+| BRULE-16 | Cước MVP được tính theo loại xe và `route_distance_km` bằng bảng giá MD-01, làm tròn lên 1.000 VND; không áp dụng giá động, khuyến mại, phí chờ hoặc phí cầu đường. | BR-08 | MVP Design Decision MD-01 | — |
+| BRULE-17 | Khi mất kết nối, trạng thái server đã ghi bền vững là nguồn đúng; command lặp phải idempotent, Offer hết hạn theo thời gian server và hệ thống không tự suy diễn mốc Trip. | BR-07, BR-17 | MVP Design Decision MD-05 | — |
+| BRULE-18 | Dữ liệu MVP được lưu theo thời hạn MD-06 và được xóa hoặc ẩn danh khi hết hạn, trừ dữ liệu đang bị giữ để xử lý sự cố. | BR-20, BR-21 | MVP Design Decision MD-06 | — |
+| BRULE-19 | Mỗi Trip có tối đa ba Payment Attempt điện tử; callback trùng hoặc muộn không được thay đổi kết quả cuối đã ghi nhận. | BR-09 | MVP Design Decision MD-07 | — |
 
 <a id="s6"></a>
 
@@ -369,7 +391,7 @@ Các yêu cầu chức năng sử dụng từ “phải” để xác định ng
 | FR-07 | CAB System phải cho phép Driver cập nhật thông tin phương tiện. | BR-02 | BRULE-01 | OI-18 |
 | FR-08 | CAB System phải cho phép Driver cập nhật trạng thái hoạt động để tham gia hoặc rời điều phối. | BR-02 | BRULE-12 | OI-14 |
 | FR-09 | CAB System phải chỉ coi Driver sẵn sàng nhận chuyến khi Driver đang làm việc, không có Trip đang thực hiện và có vị trí còn mới theo BRULE-12. | BR-02 | BRULE-03, BRULE-12 | — |
-| FR-10 | CAB System phải lưu thông tin vị trí Driver để hỗ trợ tìm Driver gần Customer và ước tính thời gian đến; chỉ dùng vị trí được cập nhật không quá 60 giây cho điều phối. | BR-04 | BRULE-12 | OI-06 |
+| FR-10 | CAB System phải lưu thông tin vị trí Driver để hỗ trợ tìm Driver gần Customer và ước tính thời gian đến; chỉ dùng vị trí được cập nhật không quá 60 giây cho điều phối. | BR-04 | BRULE-12, BRULE-18 | MD-06 |
 
 ## 6.2. Booking và điều phối
 
@@ -392,7 +414,7 @@ Các yêu cầu chức năng sử dụng từ “phải” để xác định ng
 | FR-20 | CAB System phải cho Customer biết trạng thái Booking, gồm đang điều phối, chờ thử lại, đang điều phối phục hồi hoặc không có Driver khả dụng. | BR-07 | BRULE-13, BRULE-14 | — |
 | FR-21 | CAB System phải cho Customer biết Driver nào đã được CAB System xác nhận cho Booking. | BR-07 | BRULE-11 | — |
 | FR-22 | CAB System phải cung cấp cho Customer thời gian dự kiến Driver đến điểm đón khi Driver đã được xác nhận và dữ liệu vị trí hợp lệ. | BR-07 | BRULE-12 | OI-19 |
-| FR-23 | CAB System phải cho Customer theo dõi trạng thái hiện tại của Trip. | BR-07 | — | OI-05, OI-14 |
+| FR-23 | CAB System phải cho Customer theo dõi trạng thái hiện tại của Trip; khi reconnect phải hiển thị trạng thái bền vững cuối cùng từ server. | BR-07 | BRULE-17 | MD-05, OI-14 |
 | FR-24 | CAB System phải cho phép Driver cập nhật đã đến điểm đón. | BR-06 | — | OI-14 |
 | FR-25 | CAB System phải cho phép Driver cập nhật đã đón Customer. | BR-06 | — | OI-14 |
 | FR-26 | CAB System phải cho phép Driver cập nhật Trip đang di chuyển. | BR-06 | — | OI-14 |
@@ -404,13 +426,13 @@ Trip hoàn thành theo FR-27 là sự kiện kích hoạt xác định số ti�
 
 | ID | Yêu cầu | BR | Quy tắc | Cần xác nhận |
 | --- | --- | --- | --- | --- |
-| FR-28 | CAB System phải xác định số tiền phải trả sau khi Trip hoàn thành dựa trên loại dịch vụ và thông tin Trip. | BR-08 | BRULE-05 | OI-01, OI-15 |
+| FR-28 | CAB System phải xác định số tiền phải trả sau khi Trip hoàn thành theo công thức và bảng giá MVP tại MD-01; nếu thiếu `route_distance_km` hợp lệ thì ghi nhận Fare `CALCULATION_PENDING` thay vì tự tạo số tiền. | BR-08 | BRULE-05, BRULE-16 | OI-15 |
 | FR-29 | CAB System phải cho Customer xem số tiền phải trả của Trip. | BR-07 | — | — |
 | FR-30 | CAB System phải hỗ trợ Customer chọn thanh toán tiền mặt sau khi Trip hoàn thành và ghi nhận kết quả khi Driver xác nhận đã nhận tiền. | BR-09 | — | OI-17 |
 | FR-31 | CAB System phải hỗ trợ Customer thanh toán điện tử qua External Payment Provider. | BR-09 | BRULE-07 | OI-17 |
 | FR-32 | CAB System phải tiếp nhận kết quả thanh toán điện tử từ External Payment Provider và chỉ ghi nhận một kết quả cuối cùng cho mỗi giao dịch khi có kết quả muộn hoặc trùng. | BR-09 | — | OI-17 |
 | FR-33 | CAB System phải thông báo cho Customer khi giao dịch thanh toán điện tử thất bại. | BR-09 | BRULE-08 | OI-12 |
-| FR-34 | CAB System phải cho phép Customer xử lý lại giao dịch thanh toán điện tử thất bại trên cùng Trip theo chính sách của ABC. | BR-09 | BRULE-08 | OI-07, OI-17 |
+| FR-34 | CAB System phải cho phép Customer xử lý lại giao dịch thanh toán điện tử thất bại trên cùng Trip, với tối đa ba Payment Attempt cho Trip theo MD-07. | BR-09 | BRULE-08, BRULE-19 | OI-17 |
 
 ## 6.5. Thông báo
 
@@ -427,7 +449,7 @@ Trip hoàn thành theo FR-27 là sự kiện kích hoạt xác định số ti�
 
 | ID | Yêu cầu | BR | Quy tắc | Cần xác nhận |
 | --- | --- | --- | --- | --- |
-| FR-41 | CAB System phải cho Customer xem lịch sử Trip. | BR-07 | — | OI-06 |
+| FR-41 | CAB System phải cho Customer xem lịch sử Trip còn trong thời hạn lưu trữ MVP. | BR-07 | BRULE-18 | MD-06 |
 | FR-42 | CAB System phải cho Customer đánh giá Driver sau khi Trip hoàn thành. | BR-11 | BRULE-06 | OI-10 |
 
 ## 6.7. Quản trị và vận hành
@@ -441,7 +463,7 @@ Trip hoàn thành theo FR-27 là sự kiện kích hoạt xác định số ti�
 | FR-47 | CAB System phải cho Operations Staff xem các Trip đang diễn ra và trạng thái phiên điều phối liên quan. | BR-12 | BRULE-02, BRULE-14 | OI-08, OI-14 |
 | FR-48 | CAB System phải cho Operations Staff kiểm tra trạng thái Driver, tình trạng sẵn sàng và độ mới vị trí dùng cho điều phối. | BR-12 | BRULE-02, BRULE-12 | OI-08 |
 | FR-49 | CAB System phải hỗ trợ Operations Staff kiểm tra và xử lý các trường hợp Trip lỗi trong phạm vi quyền; không cung cấp thao tác gán Driver thủ công cho Booking điều phối thất bại. | BR-12 | BRULE-02, BRULE-14 | OI-08, OI-20 |
-| FR-50 | CAB System phải cho Operations Staff tra cứu lịch sử giao dịch. | BR-13 | BRULE-02 | OI-06, OI-08, OI-20 |
+| FR-50 | CAB System phải cho Operations Staff tra cứu lịch sử giao dịch còn trong thời hạn lưu trữ MVP. | BR-13 | BRULE-02, BRULE-18 | MD-06, OI-08, OI-20 |
 
 ## 6.8. Báo cáo
 
@@ -450,7 +472,7 @@ Trip hoàn thành theo FR-27 là sự kiện kích hoạt xác định số ti�
 | FR-51 | CAB System phải cung cấp báo cáo số lượng Trip và số phiên điều phối theo kỳ báo cáo. | BR-14 | BRULE-10, BRULE-14 | OI-09 |
 | FR-52 | CAB System phải cung cấp báo cáo doanh thu. | BR-14 | — | OI-09 |
 | FR-53 | CAB System phải cung cấp báo cáo tỷ lệ Trip hoàn thành. | BR-14 | — | OI-09, OI-14 |
-| FR-54 | CAB System phải cung cấp báo cáo tỷ lệ hủy. | BR-14 | — | OI-04, OI-09 |
+| FR-54 | CAB System phải cung cấp báo cáo tỷ lệ hủy theo chính sách MVP tại MD-04. | BR-14 | BRULE-15 | OI-09 |
 | FR-55 | CAB System phải cung cấp báo cáo hiệu quả Driver và chỉ số điều phối tự động, gồm tỷ lệ xác nhận, không có Driver, thử lại và phục hồi. | BR-14 | BRULE-10, BRULE-13, BRULE-14 | OI-09 |
 
 ## 6.9. Xác thực, phân quyền và lưu vết
@@ -459,9 +481,9 @@ Trip hoàn thành theo FR-27 là sự kiện kích hoạt xác định số ti�
 | --- | --- | --- | --- | --- |
 | FR-56 | CAB System phải xác thực Customer và Driver trước khi cho sử dụng chức năng yêu cầu tài khoản. | BR-18 | BRULE-01 | OI-08, OI-18 |
 | FR-57 | CAB System phải kiểm soát quyền truy cập thao tác quản trị. | BR-19 | BRULE-02 | OI-08 |
-| FR-58 | CAB System phải lưu vết các thao tác và quyết định quan trọng, gồm mở/kết thúc phiên điều phối, đề xuất/phản hồi, xác nhận Driver, thử lại, phục hồi, hủy và kết quả thanh toán, phục vụ kiểm tra sự cố. | BR-21 | BRULE-09 | OI-06, OI-16 |
+| FR-58 | CAB System phải lưu vết các thao tác và quyết định quan trọng, gồm mở/kết thúc phiên điều phối, đề xuất/phản hồi, xác nhận Driver, thử lại, phục hồi, hủy và kết quả thanh toán, phục vụ kiểm tra sự cố trong thời hạn MD-06. | BR-21 | BRULE-09, BRULE-18 | OI-16 |
 | FR-59 | CAB System phải tự mở tối đa một phiên điều phối phục hồi khi Driver đã xác nhận báo không thể phục vụ trước khi đón Customer; không yêu cầu Operations Staff điều phối thủ công. | BR-05, BR-06, BR-12 | BRULE-14 | — |
-| FR-60 | CAB System phải cho Customer hủy Booking khi đang điều phối hoặc hủy Trip trước khi Driver cập nhật đã đón Customer; hệ thống phải thu hồi đề xuất hoặc thông báo Driver tương ứng. | BR-03, BR-06 | BRULE-15 | OI-04 |
+| FR-60 | CAB System phải cho Customer hủy Booking khi đang điều phối hoặc hủy Trip trước khi Driver cập nhật đã đón Customer; hệ thống phải thu hồi đề xuất hoặc thông báo Driver tương ứng và không tạo phí/Payment trong MVP. | BR-03, BR-06 | BRULE-15 | MD-04 |
 
 <a id="s7"></a>
 
@@ -491,7 +513,7 @@ Trip hoàn thành theo FR-27 là sự kiện kích hoạt xác định số ti�
 | Booking | Chờ thử lại | Hết 10 giây | Sẵn sàng thử lại | Customer có thể sửa điểm đón, điểm đến, loại xe trước khi gửi lại. |
 | Booking | Có Driver nhận chuyến | Driver báo không thể phục vụ trước khi đón Customer | Điều phối phục hồi | Tối đa một phiên phục hồi tự động cho mỗi Booking; Driver đó bị loại khỏi phiên phục hồi. |
 | Booking | Điều phối phục hồi | Có Driver xác nhận / thất bại sau 3 đợt | Có Driver nhận chuyến / Không có Driver khả dụng | Quy tắc đợt giống phiên chính; không mở thêm phiên phục hồi. |
-| Booking | Đang điều phối / Có Driver nhận chuyến | Customer hủy trước khi Driver cập nhật đã đón Customer | Đã hủy | Thu hồi đề xuất đang mở hoặc thông báo Driver; hệ quả tài chính: OI-04. |
+| Booking | Đang điều phối / Có Driver nhận chuyến | Customer hủy trước khi Driver cập nhật đã đón Customer | Đã hủy | Thu hồi đề xuất đang mở hoặc thông báo Driver; MVP không thu phí và không tạo Payment — MD-04. |
 | Trip | Driver đã nhận chuyến | Driver cập nhật đến điểm đón | Đã đến điểm đón | Thời điểm hình thành Trip, quyền cập nhật |
 | Trip | Đã đến điểm đón | Driver cập nhật đã đón khách | Đã đón Customer | Quy tắc chuyển trạng thái |
 | Trip | Đã đón Customer | Driver cập nhật đang di chuyển | Đang di chuyển | Quy tắc chuyển trạng thái |
@@ -499,14 +521,14 @@ Trip hoàn thành theo FR-27 là sự kiện kích hoạt xác định số ti�
 | Thanh toán | Trip hoàn thành | Customer chọn phương thức | Chờ xác nhận tiền mặt / Đang xử lý điện tử | Cước đã được xác định. |
 | Thanh toán tiền mặt | Chờ xác nhận tiền mặt | Driver xác nhận đã nhận tiền | Hoàn thành | Quy trình và bằng chứng xác nhận tiền mặt: OI-17. |
 | Thanh toán điện tử | Đang xử lý | Nhận kết quả xác định | Thành công / Thất bại | Chỉ ghi nhận một kết quả cuối cùng cho mỗi giao dịch. |
-| Thanh toán điện tử | Thất bại | Customer xử lý lại | Đang xử lý | Thực hiện trên cùng Trip; điều kiện và số lần: OI-07. |
+| Thanh toán điện tử | Thất bại | Customer xử lý lại | Đang xử lý | Thực hiện trên cùng Trip khi tổng số Attempt chưa đạt 3 — MD-07. |
 
 ## 7.3. Các chuyển tiếp chưa xác định
 
 | Trường hợp | Quyết định cần xác nhận | OI |
 | --- | --- | --- |
-| Hủy Booking hoặc Trip | Đã chốt chủ thể/thời điểm hủy; phí và hệ quả cước/thanh toán còn chờ xác nhận | OI-04 |
-| Mất kết nối | Trạng thái hiển thị, cập nhật khi offline và xử lý khi kết nối lại | OI-05 |
+| Hủy Booking hoặc Trip | Đã chốt cho MVP tại MD-04; chính sách thương mại sau MVP có thể thay thế cấu hình phí. | Đã giải quyết cho MVP |
+| Mất kết nối | Đã chốt cho MVP tại MD-05; mục tiêu offline nâng cao ngoài cơ chế retry idempotent chưa thuộc MVP. | Đã giải quyết cho MVP |
 | Trip lỗi | Trạng thái lỗi, thao tác hỗ trợ và quyền sửa trạng thái | OI-14, OI-20 |
 | Driver thay đổi trạng thái hoạt động | Driver không sẵn sàng hoặc có Trip đang thực hiện không hợp lệ để điều phối; tập trạng thái chi tiết còn chờ xác nhận | OI-14 |
 | Kết quả thanh toán chưa xác định | Trạng thái chờ, kết quả muộn/trùng và đối soát | OI-17 |
@@ -677,7 +699,7 @@ UC-14 chờ xác nhận actor truy cập báo cáo tại OI-09. Sơ đồ là b�
 | Kích hoạt | Customer gửi Booking. |
 | Kết quả sau | Booking được tiếp nhận; Driver được xác nhận hoặc phiên điều phối kết thúc không có Driver khả dụng. |
 | FR liên quan | FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-35, FR-36, FR-59, FR-60 |
-| Cần xác nhận | OI-04, OI-05, OI-14, OI-15, OI-18 |
+| Quyết định MVP / cần xác nhận | MD-04, MD-05; OI-14, OI-15, OI-18 |
 
 **Luồng chính**
 
@@ -720,7 +742,7 @@ UC-14 chờ xác nhận actor truy cập báo cáo tại OI-09. Sơ đồ là b�
 | Kích hoạt | Customer mở thông tin Booking/Trip. |
 | Kết quả sau | Customer xem được thông tin xử lý Booking/Trip; nếu phiên thất bại, Customer có thể thử lại sau thời gian khóa. |
 | FR liên quan | FR-19, FR-20, FR-21, FR-22, FR-23, FR-36 |
-| Cần xác nhận | OI-05, OI-14 |
+| Quyết định MVP / cần xác nhận | MD-05; OI-14 |
 
 **Luồng chính**
 
@@ -740,7 +762,7 @@ UC-14 chờ xác nhận actor truy cập báo cáo tại OI-09. Sơ đồ là b�
 | Kích hoạt | Driver thực hiện Trip và cập nhật tiến trình. |
 | Kết quả sau | Tiến trình Trip được cập nhật; khi hoàn thành, các nghiệp vụ cước và đánh giá có điều kiện kích hoạt tương ứng. |
 | FR liên quan | FR-23, FR-24, FR-25, FR-26, FR-27, FR-37, FR-38, FR-40, FR-59, FR-60 |
-| Cần xác nhận | OI-04, OI-05, OI-12, OI-14, OI-20 |
+| Quyết định MVP / cần xác nhận | MD-04, MD-05; OI-12, OI-14, OI-20 |
 
 **Luồng chính**
 
@@ -763,7 +785,7 @@ Trình tự mô tả luồng thông thường; quy tắc bắt buộc chuyển t
 | Kích hoạt | Customer xem số tiền và thực hiện thanh toán. |
 | Kết quả sau | Customer biết số tiền phải trả và kết quả thanh toán khi có kết quả xác định. |
 | FR liên quan | FR-28, FR-29, FR-30, FR-31, FR-32, FR-33, FR-34, FR-39 |
-| Cần xác nhận | OI-01, OI-07, OI-15, OI-17 |
+| Quyết định MVP / cần xác nhận | MD-01, MD-07; OI-15, OI-17 |
 
 **Luồng chính**
 
@@ -787,14 +809,14 @@ Thanh toán tiền mặt và điện tử là hai luồng lựa chọn; cách x�
 | Kích hoạt | Customer yêu cầu xem lịch sử. |
 | Kết quả sau | Customer xem được lịch sử Trip hiện có. |
 | FR liên quan | FR-29, FR-41 |
-| Cần xác nhận | OI-06, OI-08 |
+| Quyết định MVP / cần xác nhận | MD-06; OI-08 |
 
 **Luồng chính**
 
 1. Customer mở lịch sử Trip.
 2. CAB System cung cấp lịch sử Trip và số tiền phải trả tương ứng trong phạm vi dữ liệu lưu trữ.
 
-**Luồng thay thế / ngoại lệ:** Chưa xác thực: EX-08; thời hạn lưu trữ: OI-06.
+**Luồng thay thế / ngoại lệ:** Chưa xác thực: EX-08; thời hạn lưu trữ: MD-06.
 
 ### UC-11 — Đánh giá Driver
 
@@ -843,14 +865,14 @@ Thanh toán tiền mặt và điện tử là hai luồng lựa chọn; cách x�
 | Kích hoạt | Operations Staff yêu cầu tra cứu lịch sử giao dịch. |
 | Kết quả sau | Operations Staff xem được giao dịch thuộc phạm vi truy cập. |
 | FR liên quan | FR-50 |
-| Cần xác nhận | OI-06, OI-08, OI-20 |
+| Quyết định MVP / cần xác nhận | MD-06; OI-08, OI-20 |
 
 **Luồng chính**
 
 1. Operations Staff cung cấp tiêu chí tra cứu đã được xác nhận.
 2. CAB System cung cấp lịch sử giao dịch phù hợp, trong thời hạn lưu trữ.
 
-**Luồng thay thế / ngoại lệ:** Thiếu quyền: EX-09; thời hạn lưu dữ liệu: OI-06.
+**Luồng thay thế / ngoại lệ:** Thiếu quyền: EX-09; thời hạn lưu dữ liệu: MD-06.
 
 ### UC-14 — Khai thác báo cáo hoạt động
 
@@ -861,7 +883,7 @@ Thanh toán tiền mặt và điện tử là hai luồng lựa chọn; cách x�
 | Kích hoạt | Yêu cầu cung cấp báo cáo; cơ chế tương tác: TBD. |
 | Kết quả sau | Có thông tin báo cáo theo định nghĩa và dữ liệu đã xác nhận. |
 | FR liên quan | FR-51, FR-52, FR-53, FR-54, FR-55 |
-| Cần xác nhận | OI-04, OI-09, OI-14 |
+| Quyết định MVP / cần xác nhận | MD-04; OI-09, OI-14 |
 
 **Luồng chính**
 
@@ -920,7 +942,7 @@ Thanh toán tiền mặt và điện tử là hai luồng lựa chọn; cách x�
 | Kích hoạt | Driver yêu cầu thay đổi trạng thái hoạt động, bao gồm sẵn sàng nhận chuyến khi đang làm việc. |
 | Kết quả sau | Trạng thái hoạt động của Driver được cập nhật; thông tin sẵn sàng chỉ được dùng cho điều phối khi Driver không có Trip đang thực hiện và vị trí còn mới. |
 | FR liên quan | FR-08, FR-09 |
-| Cần xác nhận | OI-05, OI-14 |
+| Quyết định MVP / cần xác nhận | MD-05; OI-14 |
 
 **Luồng chính**
 
@@ -939,7 +961,7 @@ Thanh toán tiền mặt và điện tử là hai luồng lựa chọn; cách x�
 | Kích hoạt | CAB System nhận thông tin vị trí Driver. |
 | Kết quả sau | Thông tin vị trí được lưu gắn với Driver và chỉ được dùng cho điều phối khi không quá 60 giây. |
 | FR liên quan | FR-10 |
-| Cần xác nhận | OI-05, OI-06, OI-19 |
+| Quyết định MVP / cần xác nhận | MD-05, MD-06; OI-19 |
 
 **Luồng chính**
 
@@ -947,7 +969,7 @@ Thanh toán tiền mặt và điện tử là hai luồng lựa chọn; cách x�
 2. CAB System tiếp nhận và lưu dữ liệu vị trí gắn với Driver tương ứng.
 3. Dữ liệu đã lưu được cung cấp phục vụ tìm Driver gần Customer và ước tính thời gian đến; dữ liệu quá 60 giây không dùng để chọn Driver.
 
-**Luồng thay thế / ngoại lệ:** Tại bước 1–2, mất kết nối: EX-07; vị trí thiếu hoặc không còn mới: EX-12. Cơ chế tiếp nhận, định dạng và điều kiện hợp lệ: OI-19; thời gian lưu: OI-06.
+**Luồng thay thế / ngoại lệ:** Tại bước 1–2, mất kết nối: EX-07; vị trí thiếu hoặc không còn mới: EX-12. Cơ chế tiếp nhận, định dạng và điều kiện hợp lệ: OI-19; thời gian lưu: MD-06.
 
 ## 8.4. Danh mục ngoại lệ
 
@@ -956,10 +978,10 @@ Thanh toán tiền mặt và điện tử là hai luồng lựa chọn; cách x�
 | EX-01 | Driver từ chối | Tiếp tục tìm Driver khác; Customer không phải tạo lại Booking. (Source-derived; P005, P006) | FR-17 | UC-05, UC-06 | — |
 | EX-02 | Driver không phản hồi | Sau 20 giây, đề xuất hết hiệu lực; hệ thống tự mở đợt tiếp theo khi còn đợt. | FR-18 | UC-05, UC-06 | — |
 | EX-03 | Không tìm được Driver | Sau 3 đợt không có Driver xác nhận, thông báo Customer, khóa thử lại 10 giây; Customer có thể sửa thông tin rồi mở phiên mới trên Booking hiện có. | FR-19 | UC-05, UC-07 | — |
-| EX-04 | Thanh toán điện tử thất bại | Thông báo Customer và cho phép xử lý lại theo chính sách ABC. (Source-derived; P007) | FR-33, FR-34 | UC-09 | OI-07, OI-17 |
+| EX-04 | Thanh toán điện tử thất bại | Thông báo Customer và cho phép xử lý lại trên cùng Trip khi chưa đạt ba Attempt. (Source-derived về quyền xử lý lại; giới hạn là MD-07) | FR-33, FR-34 | UC-09 | OI-17 |
 | EX-05 | Trip lỗi | Operations Staff hỗ trợ trong phạm vi quyền, không gán Driver thủ công cho Booking thất bại; thao tác khắc phục cụ thể: TBD. | FR-49 | UC-08, UC-12 | OI-20 |
-| EX-06 | Hủy Booking / Trip | Customer hủy được khi đang điều phối hoặc sau xác nhận trước mốc đã đón Customer; sau mốc này không hủy trực tiếp trên ứng dụng. Phí/hệ quả tài chính: TBD. | FR-60, FR-54 (ảnh hưởng) | UC-05, UC-08, UC-09 | OI-04 |
-| EX-07 | Mất kết nối mạng | Hành vi offline, reconnect, đồng bộ và thông báo: TBD. (TBD / Open Issue; P012) | FR-10, FR-12, FR-23–FR-27 (ảnh hưởng) | UC-05, UC-07, UC-08, UC-17, UC-18 | OI-05 |
+| EX-06 | Hủy Booking / Trip | Customer hủy được khi đang điều phối hoặc sau xác nhận trước mốc đã đón Customer; MVP không thu phí và không tạo Payment. Sau mốc này không hủy trực tiếp trên ứng dụng. | FR-60, FR-54 (ảnh hưởng) | UC-05, UC-08, UC-09 | MD-04 |
+| EX-07 | Mất kết nối mạng | Giữ trạng thái server cuối; Offer hết hạn theo server; location quá 60 giây không dùng; command Trip được gửi lại bằng idempotency key sau reconnect và không tự chuyển trạng thái. | FR-10, FR-12, FR-23–FR-27 (ảnh hưởng) | UC-05, UC-07, UC-08, UC-17, UC-18 | MD-05 |
 | EX-08 | Chưa xác thực | Không cho sử dụng chức năng yêu cầu tài khoản trước khi xác thực. (Source-derived; P011) | FR-56 | UC-02 và các chức năng tài khoản | OI-08, OI-18 |
 | EX-09 | Không đủ quyền quản trị | Không cho thực hiện thao tác ngoài quyền được cấp. (Source-derived; P009, P011) | FR-57 | UC-03, UC-12, UC-13 | OI-08 |
 | EX-10 | Lỗi thanh toán / thông báo | Không làm toàn bộ hệ thống đặt xe ngừng hoạt động; phạm vi suy giảm và phục hồi: TBD. (Source-derived; P010) | NFR-02 | UC-05, UC-08, UC-09 | OI-13 |
@@ -983,8 +1005,8 @@ Thanh toán tiền mặt và điện tử là hai luồng lựa chọn; cách x�
 | Phương tiện | Thông tin phương tiện, loại xe | FR-07, FR-11, FR-45 | P004–P005, P009 | Danh mục và quan hệ loại xe–dịch vụ — OI-15 |
 | Vị trí Driver | Vị trí phục vụ tìm Driver và ước tính thời gian đến; vị trí quá 60 giây không hợp lệ để điều phối | FR-10, FR-13, FR-22 | P005–P006; quyết định 28/09/2026 | Nguồn, định dạng, tần suất, độ chính xác — OI-19 |
 | Booking | Điểm đón, điểm đến, loại xe, thông tin xử lý tìm Driver và trạng thái thử lại/hủy | FR-11–FR-21, FR-60 | P004–P006 | Nhận diện, vòng đời và liên hệ Trip — OI-14, OI-18 |
-| Phiên / đợt điều phối | Phiên chính, phiên thử lại, tối đa một phiên phục hồi; đợt mời tối đa 20 Driver, ảnh chụp vị trí, phản hồi và quyết định chọn Driver | FR-12–FR-19, FR-59 | Quyết định 28/09/2026 | Cách biểu diễn dữ liệu kỹ thuật và thời hạn lưu — OI-06, OI-14 |
-| Trip | Driver nhận chuyến, tiến trình, lịch sử và thông tin phục vụ tính cước | FR-23–FR-29, FR-41 | P004–P007 | Tập thông tin tính cước và mô hình trạng thái — OI-01, OI-14 |
+| Phiên / đợt điều phối | Phiên chính, phiên thử lại, tối đa một phiên phục hồi; đợt mời tối đa 20 Driver, ảnh chụp vị trí, phản hồi và quyết định chọn Driver | FR-12–FR-19, FR-59 | Quyết định 28/09/2026 | Cách biểu diễn dữ liệu kỹ thuật — OI-14; thời hạn lưu — MD-06 |
+| Trip | Driver nhận chuyến, tiến trình, lịch sử và `route_distance_km` phục vụ tính cước | FR-23–FR-29, FR-41 | P004–P007; MD-01 | Mô hình trạng thái — OI-14 |
 | Thanh toán | Phương thức, số tiền, kết quả giao dịch và tham chiếu Trip | FR-29–FR-34, FR-50 | P007–P009; quyết định 28/09/2026 | Trạng thái, tham chiếu nhà cung cấp, bằng chứng xác nhận tiền mặt — OI-17 |
 | Đánh giá | Đánh giá Driver sau Trip hoàn thành | FR-42 | P004 | Thang điểm, nội dung, sửa và thời hạn — OI-10 |
 | Thông báo | Mốc nghiệp vụ và người nhận | FR-15, FR-33, FR-35–FR-40 | P005, P007–P008 | Kênh, nội dung chi tiết và trạng thái gửi — OI-12 |
@@ -1009,7 +1031,7 @@ Thanh toán tiền mặt và điện tử là hai luồng lựa chọn; cách x�
 
 ## 9.3. Bảo vệ và lưu trữ
 
-Thông tin cá nhân, phương tiện, vị trí và giao dịch chịu CON-05 và NFR-09. Thông tin thanh toán nhạy cảm chịu CON-02 và NFR-10. Lưu vết thao tác chịu CON-06 và FR-58. Thời gian lưu trữ các nhóm dữ liệu: TBD — OI-06. Quyền tra cứu audit và tiêu chí bảo vệ chi tiết: TBD — OI-16.
+Thông tin cá nhân, phương tiện, vị trí và giao dịch chịu CON-05 và NFR-09. Thông tin thanh toán nhạy cảm chịu CON-02 và NFR-10. Lưu vết thao tác chịu CON-06 và FR-58. Trong MVP, Driver Location thô được lưu 30 ngày; Notification Delivery 90 ngày; Booking, Dispatch, Trip, Fare, Payment, Rating và Audit 24 tháng; profile/account được giữ khi hoạt động và 24 tháng sau vô hiệu hóa. Dữ liệu hết hạn được xóa hoặc ẩn danh theo MD-06, trừ dữ liệu đang được giữ để điều tra sự cố. Quyền tra cứu audit và tiêu chí bảo vệ chi tiết vẫn thuộc OI-16.
 
 <a id="s10"></a>
 
@@ -1075,7 +1097,7 @@ Các tiêu chí dưới đây xác định hành vi và kết quả dùng để 
 | AC-07 | FR-07 | Thông tin phương tiện do Driver cập nhật được thể hiện trong hồ sơ phương tiện tương ứng. | Trường dữ liệu, quy tắc đầu vào và cơ chế xác thực (OI-18) |
 | AC-08 | FR-08 | Driver thay đổi trạng thái hoạt động; hệ thống thể hiện trạng thái đã cập nhật và chỉ dùng trạng thái phù hợp cho điều phối. | Trạng thái và quy tắc chuyển tiếp liên quan (OI-14) |
 | AC-09 | FR-09 | Driver chỉ được đưa vào tập sẵn sàng nhận chuyến khi không có Trip đang thực hiện và có vị trí còn mới theo BRULE-12. | — |
-| AC-10 | FR-10 | Với vị trí cập nhật không quá 60 giây, Driver sẵn sàng được dùng cho điều phối; với vị trí quá 60 giây, Driver không xuất hiện trong nhóm được mời. | Cơ chế tiếp nhận và độ chính xác vị trí; Thời hạn lưu dữ liệu liên quan (OI-06, OI-19) |
+| AC-10 | FR-10 | Với vị trí cập nhật không quá 60 giây, Driver sẵn sàng được dùng cho điều phối; với vị trí quá 60 giây, Driver không xuất hiện trong nhóm được mời. | Cơ chế tiếp nhận và độ chính xác vị trí (OI-19); thời hạn lưu theo MD-06 |
 | AC-11 | FR-11 | Customer nhập hai địa điểm và chọn một loại xe trong danh mục; thông tin lựa chọn gắn với Booking gửi đi. | Danh mục loại xe/dịch vụ và kịch bản mở rộng (OI-15); Trường dữ liệu, quy tắc đầu vào và cơ chế xác thực (OI-18) |
 | AC-12 | FR-12 | Khi Customer gửi thông tin Booking đáp ứng quy tắc, hệ thống tiếp nhận Booking và mở phiên điều phối tự động. | Trường dữ liệu, quy tắc đầu vào và cơ chế xác thực (OI-18) |
 | AC-13 | FR-13 | Với tập Driver khác nhau, nhóm điều phối chỉ gồm Driver sẵn sàng, không có Trip đang thực hiện và có vị trí không quá 60 giây. | Cơ chế tiếp nhận và độ chính xác vị trí (OI-19) |
@@ -1093,20 +1115,20 @@ Các tiêu chí dưới đây xác định hành vi và kết quả dùng để 
 | AC-25 | FR-25 | Driver cập nhật đã đón Customer; Customer theo dõi được mốc đã đón khách của Trip. | Trạng thái và quy tắc chuyển tiếp liên quan (OI-14) |
 | AC-26 | FR-26 | Driver cập nhật đang di chuyển; trạng thái hiện tại của Trip thể hiện mốc tương ứng. | Trạng thái và quy tắc chuyển tiếp liên quan (OI-14) |
 | AC-27 | FR-27 | Driver cập nhật hoàn thành; Customer thấy Trip hoàn thành, nhận thông báo hoàn thành và có thể sử dụng nghiệp vụ sau Trip. | Trạng thái và quy tắc chuyển tiếp liên quan (OI-14) |
-| AC-28 | FR-28 | Với Trip hoàn thành và bộ dữ liệu tính cước, số tiền hệ thống xác định khớp kết quả tính độc lập theo chính sách cước. | Quy tắc và dữ liệu đầu vào tính cước (OI-01); Danh mục loại xe/dịch vụ và kịch bản mở rộng (OI-15) |
+| AC-28 | FR-28 | Với Trip hoàn thành và `route_distance_km` hợp lệ, số tiền hệ thống xác định khớp công thức/bảng giá MD-01; thiếu khoảng cách tạo `CALCULATION_PENDING`. | Danh mục loại xe/dịch vụ sau MVP và kịch bản mở rộng (OI-15) |
 | AC-29 | FR-29 | Với Trip đã xác định được cước, số tiền Customer nhìn thấy trùng với số tiền phải trả của Trip. | — |
 | AC-30 | FR-30 | Sau Trip hoàn thành, Customer chọn tiền mặt; hệ thống chỉ ghi nhận thanh toán hoàn thành khi Driver xác nhận đã nhận tiền. | Bằng chứng/quy trình xác nhận tiền mặt (OI-17) |
 | AC-31 | FR-31 | Yêu cầu thanh toán điện tử được xử lý qua External Payment Provider; CAB System nhận được kết quả giao dịch. | Nhà cung cấp, giao tiếp và chính sách thanh toán liên quan (OI-17) |
 | AC-32 | FR-32 | Với kết quả thành công, thất bại, muộn hoặc trùng từ nhà cung cấp, CAB System hiển thị kết quả tương ứng và chỉ ghi nhận một kết quả cuối cùng cho mỗi giao dịch. | Nhà cung cấp, giao tiếp và chính sách thanh toán liên quan (OI-17) |
 | AC-33 | FR-33 | Khi External Payment Provider trả kết quả thất bại, Customer nhận được thông báo thanh toán thất bại. | Kênh, nội dung và mốc thông báo (OI-12) |
-| AC-34 | FR-34 | Với giao dịch thất bại đủ điều kiện theo chính sách, Customer có thể xử lý lại thanh toán trên cùng Trip. | Điều kiện và số lần xử lý lại thanh toán (OI-07); Nhà cung cấp, giao tiếp và chính sách thanh toán liên quan (OI-17) |
+| AC-34 | FR-34 | Với giao dịch thất bại và tổng số Attempt nhỏ hơn ba, Customer có thể xử lý lại trên cùng Trip; khi đã đủ ba Attempt thì bị từ chối. | Nhà cung cấp và hợp đồng giao tiếp (OI-17); giới hạn theo MD-07 |
 | AC-35 | FR-35 | Booking được tiếp nhận, phiên điều phối được mở và Customer nhận thông báo tương ứng. | Kênh, nội dung và mốc thông báo (OI-12) |
 | AC-36 | FR-36 | Customer nhận thông báo khi Driver được xác nhận, khi không có Driver khả dụng và khi phiên phục hồi được mở. | Kênh, nội dung và mốc thông báo (OI-12) |
 | AC-37 | FR-37 | Driver cập nhật đã đến điểm đón; Customer nhận thông báo đến điểm đón của Trip tương ứng. | Kênh, nội dung và mốc thông báo (OI-12) |
 | AC-38 | FR-38 | Trip hoàn thành; Customer nhận thông báo hoàn thành Trip tương ứng. | Kênh, nội dung và mốc thông báo (OI-12) |
 | AC-39 | FR-39 | Khi có kết quả thanh toán, Customer nhận thông báo phản ánh đúng kết quả của giao dịch tương ứng. | Kênh, nội dung và mốc thông báo (OI-12); Nhà cung cấp, giao tiếp và chính sách thanh toán liên quan (OI-17) |
 | AC-40 | FR-40 | Driver nhận được đề xuất chuyến, thông báo đề xuất hết hiệu lực và thay đổi thuộc danh mục của Trip đang thực hiện. | Kênh, nội dung và mốc thông báo (OI-12) |
-| AC-41 | FR-41 | Customer xem được lịch sử Trip tương ứng còn trong thời hạn lưu trữ. | Thời hạn lưu dữ liệu liên quan (OI-06) |
+| AC-41 | FR-41 | Customer xem được lịch sử Trip tương ứng còn trong thời hạn lưu trữ MD-06. | — |
 | AC-42 | FR-42 | Customer thực hiện đánh giá đối với Trip hoàn thành và đánh giá được ghi nhận; đánh giá trước khi hoàn thành không đáp ứng điều kiện nghiệp vụ. | Quy tắc ghi nhận đánh giá (OI-10) |
 | AC-43 | FR-43 | Operations Staff có quyền thực hiện được thao tác quản lý Customer trong danh mục; thiếu quyền thì không thực hiện được. | Danh mục chức năng và quyền truy cập (OI-08); Danh mục thao tác vận hành và tiêu chí tra cứu (OI-20) |
 | AC-44 | FR-44 | Operations Staff có quyền thực hiện được thao tác quản lý Driver trong danh mục. | Danh mục chức năng và quyền truy cập (OI-08); Danh mục thao tác vận hành và tiêu chí tra cứu (OI-20) |
@@ -1115,15 +1137,15 @@ Các tiêu chí dưới đây xác định hành vi và kết quả dùng để 
 | AC-47 | FR-47 | Operations Staff có quyền xem Trip đang diễn ra và trạng thái phiên điều phối liên quan. | Danh mục chức năng và quyền truy cập (OI-08); Trạng thái và quy tắc chuyển tiếp liên quan (OI-14) |
 | AC-48 | FR-48 | Operations Staff có quyền xem trạng thái Driver, tình trạng sẵn sàng và độ mới vị trí được sử dụng cho điều phối. | Danh mục chức năng và quyền truy cập (OI-08) |
 | AC-49 | FR-49 | Với một Trip lỗi, Operations Staff thực hiện được thao tác hỗ trợ trong phạm vi quyền nhưng không thể gán Driver thủ công cho Booking đã thất bại điều phối. | Danh mục chức năng và quyền truy cập (OI-08); Danh mục thao tác vận hành và tiêu chí tra cứu (OI-20) |
-| AC-50 | FR-50 | Operations Staff có quyền tra cứu được giao dịch còn trong thời hạn lưu trữ theo tiêu chí tra cứu. | Thời hạn lưu dữ liệu liên quan (OI-06); Danh mục chức năng và quyền truy cập (OI-08); Danh mục thao tác vận hành và tiêu chí tra cứu (OI-20) |
+| AC-50 | FR-50 | Operations Staff có quyền tra cứu được giao dịch còn trong thời hạn lưu trữ MD-06 theo tiêu chí tra cứu. | Danh mục chức năng và quyền truy cập (OI-08); danh mục thao tác vận hành và tiêu chí tra cứu (OI-20) |
 | AC-51 | FR-51 | Với tập dữ liệu và kỳ báo cáo, số Trip và số phiên điều phối trên báo cáo khớp phép đếm độc lập theo định nghĩa chỉ số. | Định nghĩa chỉ số, công thức, dữ liệu và kỳ báo cáo (OI-09) |
 | AC-52 | FR-52 | Doanh thu báo cáo khớp kết quả đối chiếu từ dữ liệu mẫu theo quy tắc ghi nhận doanh thu và kỳ báo cáo. | Định nghĩa chỉ số, công thức, dữ liệu và kỳ báo cáo (OI-09) |
 | AC-53 | FR-53 | Tỷ lệ hoàn thành trên dữ liệu mẫu khớp công thức và định nghĩa Trip hoàn thành. | Định nghĩa chỉ số, công thức, dữ liệu và kỳ báo cáo (OI-09); Trạng thái và quy tắc chuyển tiếp liên quan (OI-14) |
-| AC-54 | FR-54 | Tỷ lệ hủy trên dữ liệu mẫu khớp định nghĩa hủy, mẫu số và kỳ tính. | Định nghĩa và chính sách hủy (OI-04); Định nghĩa chỉ số, công thức, dữ liệu và kỳ báo cáo (OI-09) |
+| AC-54 | FR-54 | Tỷ lệ hủy trên dữ liệu mẫu khớp các lần hủy hợp lệ theo MD-04, mẫu số và kỳ tính. | Định nghĩa chỉ số, công thức, dữ liệu và kỳ báo cáo (OI-09) |
 | AC-55 | FR-55 | Các chỉ số hiệu quả Driver và tỷ lệ xác nhận/không có Driver/thử lại/phục hồi trên dữ liệu mẫu khớp định nghĩa và công thức. | Định nghĩa chỉ số, công thức, dữ liệu và kỳ báo cáo (OI-09) |
 | AC-56 | FR-56 | Đối với chức năng thuộc danh mục yêu cầu tài khoản, Customer/Driver chưa được xác thực không sử dụng được; người đã được xác thực có thể tiếp tục theo quyền áp dụng. | Danh mục chức năng và quyền truy cập (OI-08); Trường dữ liệu, quy tắc đầu vào và cơ chế xác thực (OI-18) |
 | AC-57 | FR-57 | Với từng thao tác nhạy cảm trong ma trận quyền, nhân viên thiếu quyền bị ngăn thực hiện; người có quyền thực hiện được. | Danh mục chức năng và quyền truy cập (OI-08) |
-| AC-58 | FR-58 | Khi mở/kết thúc phiên điều phối, phản hồi/xác nhận Driver, thử lại, phục hồi, hủy hoặc có kết quả thanh toán, CAB System lưu vết đầy đủ nội dung tương ứng; dữ liệu lưu vết có thể được kiểm tra trong thời hạn lưu trữ. | Thời hạn lưu dữ liệu liên quan (OI-06); Tiêu chí bảo vệ dữ liệu và danh mục, nội dung audit (OI-16) |
+| AC-58 | FR-58 | Khi mở/kết thúc phiên điều phối, phản hồi/xác nhận Driver, thử lại, phục hồi, hủy hoặc có kết quả thanh toán, CAB System lưu vết đầy đủ nội dung tương ứng; dữ liệu lưu vết có thể được kiểm tra trong thời hạn MD-06. | Tiêu chí bảo vệ dữ liệu và danh mục, nội dung audit (OI-16) |
 
 ## 12.2. Tiêu chí chất lượng
 
@@ -1137,7 +1159,7 @@ Các tiêu chí dưới đây xác định hành vi và kết quả dùng để 
 | AC-64 | NFR-06 | Đánh giá thiết kế và trình diễn bổ sung một phương thức thanh toán trong kịch bản; các nghiệp vụ hiện hữu vẫn đáp ứng yêu cầu liên quan. | Nhà cung cấp, giao tiếp và chính sách thanh toán liên quan (OI-17) |
 | AC-65 | NFR-07 | Đánh giá thiết kế và trình diễn kịch bản bổ sung kênh/nhà cung cấp; các mốc thông báo hiện hữu vẫn được đáp ứng. | Kênh, nội dung và mốc thông báo (OI-12) |
 | AC-66 | NFR-08 | Đánh giá thiết kế và trình diễn một trường hợp thay thế thành phần; phạm vi thay đổi và kết quả hồi quy đáp ứng tiêu chí kiểm chứng. | Kịch bản kiểm chứng, thước đo và ngưỡng chất lượng (OI-13) |
-| AC-67 | NFR-09 | Đánh giá và kiểm thử bảo mật đối với dữ liệu cá nhân, phương tiện, vị trí, phiên điều phối và giao dịch; mọi tiêu chí áp dụng đều đạt. | Thời hạn lưu dữ liệu liên quan (OI-06); Tiêu chí bảo vệ dữ liệu và danh mục, nội dung audit (OI-16) |
+| AC-67 | NFR-09 | Đánh giá và kiểm thử bảo mật đối với dữ liệu cá nhân, phương tiện, vị trí, phiên điều phối và giao dịch; mọi tiêu chí áp dụng đều đạt và retention tuân MD-06. | Tiêu chí bảo vệ dữ liệu và danh mục, nội dung audit (OI-16) |
 | AC-68 | NFR-10 | Sau các giao dịch thử thành công/thất bại, kiểm tra kho dữ liệu, nhật ký và các nơi lưu trữ thuộc CAB System; không có thông tin thuộc danh mục dữ liệu thanh toán nhạy cảm không được lưu. | Danh mục dữ liệu thanh toán nhạy cảm không được lưu (OI-17) |
 
 ## 12.3. Tiêu chí giao tiếp
@@ -1147,8 +1169,8 @@ Các tiêu chí dưới đây xác định hành vi và kết quả dùng để 
 | AC-69 | EIR-01 | Kiểm tra các luồng Customer trên nền tảng mục tiêu; dữ liệu vào/ra đáp ứng các FR tương ứng. | Nền tảng và giao diện sử dụng (OI-21) |
 | AC-70 | EIR-02 | Kiểm tra các luồng Driver trên nền tảng mục tiêu; các thao tác và thông tin hiển thị đáp ứng các FR tương ứng. | Trường dữ liệu, quy tắc đầu vào và cơ chế xác thực (OI-18); Nền tảng và giao diện sử dụng (OI-21) |
 | AC-71 | EIR-03 | Trên giao diện quản trị, đối chiếu các thao tác với ma trận quyền; không cung cấp khả năng thực hiện thao tác trái quyền. | Danh mục chức năng và quyền truy cập (OI-08); Danh mục thao tác vận hành và tiêu chí tra cứu (OI-20); Nền tảng và giao diện sử dụng (OI-21) |
-| AC-72 | EIR-04 | Kiểm thử tích hợp với môi trường thử của nhà cung cấp đã chọn, bao gồm thành công, thất bại và xử lý lại theo chính sách. | Điều kiện và luồng xử lý lại thanh toán (OI-07); Nhà cung cấp, giao tiếp và chính sách thanh toán liên quan (OI-17) |
-| AC-73 | EIR-05 | Cấp dữ liệu vị trí hợp lệ qua cơ chế tiếp nhận; xác minh dữ liệu được sử dụng cho tìm Driver và ước tính thời gian đến. | Quy tắc xử lý mất kết nối (OI-05); Cơ chế tiếp nhận, chất lượng vị trí và phương pháp ước tính thời gian đến (OI-19) |
+| AC-72 | EIR-04 | Kiểm thử tích hợp với môi trường thử của nhà cung cấp đã chọn, bao gồm thành công, thất bại, callback trùng/muộn và tối đa ba Attempt theo MD-07. | Nhà cung cấp, giao tiếp và chính sách tích hợp (OI-17) |
+| AC-73 | EIR-05 | Cấp dữ liệu vị trí hợp lệ qua cơ chế tiếp nhận; xác minh dữ liệu được sử dụng cho tìm Driver và ước tính thời gian đến; reconnect tuân MD-05. | Cơ chế tiếp nhận, chất lượng vị trí và phương pháp ETA (OI-19) |
 | AC-74 | EIR-06 | Phát sinh từng mốc thông báo và kiểm tra đúng người nhận, nội dung nghiệp vụ và kênh. | Kênh, nội dung và mốc thông báo (OI-12) |
 
 ## 12.4. Ràng buộc tiến độ và điều kiện nghiệm thu
@@ -1162,7 +1184,11 @@ Các tiêu chí dưới đây xác định hành vi và kết quả dùng để 
 | ID | FR | Nội dung tiêu chí | Điều kiện tiên quyết |
 | --- | --- | --- | --- |
 | AC-76 | FR-59 | Khi Driver đã xác nhận báo không thể phục vụ trước khi đón Customer, CAB System tự mở đúng một phiên phục hồi; Driver đó không được mời trong phiên phục hồi và không có phiên phục hồi thứ hai. | — |
-| AC-77 | FR-60 | Customer hủy được khi đang điều phối hoặc trước mốc đã đón Customer; sau mốc đó ứng dụng từ chối hủy trực tiếp Trip và lưu vết thao tác hủy hợp lệ. | Phí/hệ quả cước và thanh toán khi hủy (OI-04) |
+| AC-77 | FR-60 | Customer hủy được khi đang điều phối hoặc trước mốc đã đón Customer; MVP không tạo phí/Payment cho lần hủy này. Sau mốc đó ứng dụng từ chối hủy trực tiếp Trip và lưu vết thao tác. | — |
+| AC-78 | FR-28 | Với từng loại xe MVP và `route_distance_km` ở biên 0, 2 và lớn hơn 2 km, số tiền khớp MD-01 và được làm tròn lên 1.000 VND; thiếu khoảng cách tạo Fare `CALCULATION_PENDING`. | — |
+| AC-79 | FR-23–FR-27 | Khi client mất kết nối rồi gửi lại cùng command/idempotency key, hệ thống chỉ áp dụng một lần, giữ đúng thứ tự trạng thái và không tự suy diễn mốc Trip. | — |
+| AC-80 | FR-10, FR-41, FR-50, FR-58 | Dữ liệu thử quá thời hạn MD-06 được job retention xóa/ẩn danh đúng nhóm; dữ liệu đang được giữ xử lý sự cố không bị xóa. | — |
+| AC-81 | FR-34 | Trip cho phép tối đa ba Payment Attempt điện tử; Attempt thứ tư bị từ chối và callback trùng/muộn không tạo kết quả cuối thứ hai. | — |
 
 | Phạm vi kiểm chứng | Điều kiện |
 | --- | --- |
@@ -1177,17 +1203,17 @@ Các tiêu chí dưới đây xác định hành vi và kết quả dùng để 
 
 # 13. Các vấn đề cần xác nhận
 
-**Trạng thái danh mục:** OI-02, OI-03, OI-04, OI-14, OI-19 và một phần OI-07, OI-17, OI-20 đã được chốt tại buổi rà soát ngày 28/09/2026. Các mục còn lại hoặc các chi tiết được nêu rõ vẫn chờ xác nhận.
+**Trạng thái danh mục:** Các khoảng trống mà Customer Requirement cho phép BA làm rõ cho bản demo được chốt thành MVP Design Decision MD-01 đến MD-07. OI đã giải quyết cho MVP vẫn được giữ trong bảng để phân biệt chính sách MVP với chính sách chính thức của Công ty ABC. Các mục phụ thuộc quyết định tổ chức hoặc nhà cung cấp bên ngoài vẫn để mở.
 
 | ID | Nội dung | Quyết định cần xác nhận | Ảnh hưởng | Nguồn liên quan |
 | --- | --- | --- | --- | --- |
-| OI-01 | Cước | Công thức, dữ liệu đầu vào, đơn vị tiền, cách làm tròn và quy tắc tính cước. | FR-28 | P007, P012 |
+| OI-01 | Cước — **Đã giải quyết cho MVP** | Áp dụng công thức, bảng giá, VND và làm tròn tại MD-01. Chính sách thương mại sau MVP có thể thay thế cấu hình. | FR-28 | P007, P012; MD-01 |
 | OI-02 | Ưu tiên Driver — **Đã chốt một phần** | Đợt điều phối mời tối đa 20 Driver hợp lệ; ưu tiên theo khoảng cách khi có phản hồi đồng thời. Các trọng số/tiêu chí khác chưa áp dụng cho release này. | FR-13, FR-14 | P006, P012; quyết định 28/09/2026 |
 | OI-03 | Phản hồi Driver — **Đã chốt** | Driver có tối đa 20 giây để phản hồi; sau thời điểm này đề xuất hết hiệu lực. | FR-16, FR-18 | P006, P012; quyết định 28/09/2026 |
-| OI-04 | Hủy Booking / Trip — **Đã chốt một phần** | Customer hủy khi đang điều phối hoặc trước mốc đã đón Customer; sau đó không hủy trực tiếp trên ứng dụng. Phí, cước và hệ quả thanh toán khi hủy còn chờ xác nhận. | FR-54, FR-60, BR-03, BR-05, BR-06, BR-08, BR-09, BR-14, EX-06 | P012; quyết định 28/09/2026 |
-| OI-05 | Mất kết nối | Hành vi offline, hiển thị, đồng bộ, reconnect và giải quyết cập nhật xung đột. | FR-23, EIR-05, BR-03, BR-05, BR-06, BR-07, BR-10, EX-07 | P012 |
-| OI-06 | Lưu trữ | Thời gian lưu từng nhóm dữ liệu, lịch sử và audit; cách xử lý hết hạn. | FR-10, FR-41, FR-50, FR-58, NFR-09, CON-05, CON-06, Các nhóm dữ liệu tại §9.1 | P012 |
-| OI-07 | Thanh toán thất bại — **Đã chốt một phần** | Customer xử lý lại thanh toán điện tử trên cùng Trip; điều kiện cụ thể và giới hạn số lần còn chờ xác nhận. | FR-34, EIR-04 | P007; quyết định 28/09/2026 |
+| OI-04 | Hủy Booking / Trip — **Đã giải quyết cho MVP** | Customer hủy trước `PICKED_UP`; MVP không thu phí và không tạo Payment; sau đó không hủy trực tiếp — MD-04. | FR-54, FR-60, BR-03, BR-05, BR-06, BR-08, BR-09, BR-14, EX-06 | P012; MD-04 |
+| OI-05 | Mất kết nối — **Đã giải quyết cho MVP** | Trạng thái server, idempotent retry, expiry theo server và location freshness áp dụng theo MD-05. | FR-23, EIR-05, BR-03, BR-05, BR-06, BR-07, BR-10, EX-07 | P012; MD-05 |
+| OI-06 | Lưu trữ — **Đã giải quyết cho MVP** | Thời hạn từng nhóm dữ liệu và xử lý hết hạn áp dụng theo MD-06. | FR-10, FR-41, FR-50, FR-58, NFR-09, CON-05, CON-06, Các nhóm dữ liệu tại §9.1 | P012; MD-06 |
+| OI-07 | Thanh toán thất bại — **Đã giải quyết cho MVP** | Customer xử lý lại trên cùng Trip; tổng cộng tối đa ba Payment Attempt theo MD-07. | FR-34, EIR-04 | P007; MD-07 |
 | OI-08 | Quyền truy cập | Danh mục chức năng cần tài khoản; role, permission và thao tác quản trị nhạy cảm. | FR-05, FR-43, FR-44, FR-45, FR-46, FR-47, FR-48, FR-49, FR-50, FR-56, FR-57, EIR-03 | P009, P011 |
 | OI-09 | Báo cáo | Công thức, kỳ tính, nguồn dữ liệu, xử lý dữ liệu trống/mẫu số bằng 0, quyền và cách truy cập báo cáo. | FR-51, FR-52, FR-53, FR-54, FR-55 | P009 |
 | OI-10 | Đánh giá Driver | Thang điểm, nội dung, thời hạn, chỉnh sửa, đánh giá trùng và tổng hợp kết quả. | FR-42 | P004 |
@@ -1296,7 +1322,7 @@ Các tiêu chí dưới đây xác định hành vi và kết quả dùng để 
 | FR-57 | P009, P011 | UC-03, UC-12 | AC-57 | — |
 | FR-58 | P011 | Xử lý nội bộ khi phát sinh thao tác thuộc danh mục audit | AC-58 | — |
 | FR-59 | Quyết định đã chốt 28/09/2026 | UC-05, UC-08 | AC-76 | §7; OI-14 |
-| FR-60 | Quyết định đã chốt 28/09/2026 | UC-05, UC-08 | AC-77 | §7; OI-04 |
+| FR-60 | Quyết định đã chốt 28/09/2026; MD-04 | UC-05, UC-08 | AC-77 | §7 |
 
 ## 14.3. NFR / EIR → Tiêu chí chấp nhận
 
@@ -1310,13 +1336,13 @@ Các tiêu chí dưới đây xác định hành vi và kết quả dùng để 
 | NFR-06 | BR-17 | AC-64 | OI-17 |
 | NFR-07 | BR-17 | AC-65 | OI-12 |
 | NFR-08 | BR-17 | AC-66 | OI-13 |
-| NFR-09 | BR-20 | AC-67 | OI-06, OI-16 |
+| NFR-09 | BR-20 | AC-67 | MD-06, OI-16 |
 | NFR-10 | BR-20 | AC-68 | OI-17 |
 | EIR-01 | BR-01, BR-03, BR-07, BR-09, BR-11 | AC-69 | OI-21 |
 | EIR-02 | BR-02, BR-06 | AC-70 | OI-18, OI-21 |
 | EIR-03 | BR-12, BR-13, BR-19 | AC-71 | OI-08, OI-20, OI-21 |
-| EIR-04 | BR-09, BR-20 | AC-72 | OI-07, OI-17 |
-| EIR-05 | BR-04, BR-07 | AC-73 | OI-05, OI-19 |
+| EIR-04 | BR-09, BR-20 | AC-72 | MD-07, OI-17 |
+| EIR-05 | BR-04, BR-07 | AC-73 | MD-05, OI-19 |
 | EIR-06 | BR-10, BR-06, BR-09 | AC-74 | OI-12 |
 
 ## 14.4. Ràng buộc và quy tắc → Kiểm chứng
@@ -1340,6 +1366,10 @@ Các tiêu chí dưới đây xác định hành vi và kết quả dùng để 
 | BRULE-13 | FR-19 | AC-19 |
 | BRULE-14 | FR-49, FR-59 | AC-49, AC-76 |
 | BRULE-15 | FR-60 | AC-77 |
+| BRULE-16 | FR-28 | AC-78 |
+| BRULE-17 | FR-23–FR-27 | AC-79 |
+| BRULE-18 | FR-10, FR-41, FR-50, FR-58 | AC-80 |
+| BRULE-19 | FR-34 | AC-81 |
 
 ## 14.5. Ngoại lệ → Kiểm chứng
 
@@ -1348,10 +1378,10 @@ Các tiêu chí dưới đây xác định hành vi và kết quả dùng để 
 | EX-01 | AC-17 |
 | EX-02 | AC-18 |
 | EX-03 | AC-19 |
-| EX-04 | AC-33, AC-34; OI-07, OI-17 |
+| EX-04 | AC-33, AC-34, AC-81; MD-07, OI-17 |
 | EX-05 | AC-49; OI-20 |
-| EX-06 | AC-77; phí/hệ quả tài chính: OI-04 |
-| EX-07 | TBD — OI-05 |
+| EX-06 | AC-77; MD-04 |
+| EX-07 | AC-79; MD-05 |
 | EX-08 | AC-56 |
 | EX-09 | AC-57 |
 | EX-10 | AC-60 |
@@ -1372,11 +1402,11 @@ Open Issue tại §13 ghi nhận thông tin hoặc quyết định còn thiếu.
 
 | ID | Rủi ro và nguyên nhân | Tác động có thể xảy ra | Căn cứ / liên kết | Biện pháp ứng phó đề xuất |
 | --- | --- | --- | --- | --- |
-| RISK-01 | Chậm triển khai nếu các quyết định ảnh hưởng release chưa chốt kịp thời. Một số OI đã được chốt, nhưng phạm vi release, mốc bắt đầu, cước, tích hợp và chất lượng định lượng vẫn chưa chốt trong khi thời hạn xây dựng, triển khai là 7 tuần. | Giảm thời gian thiết kế, phát triển và kiểm thử; làm lại công việc hoặc vượt thời hạn. | P002; CON-01; OI-01, OI-04–OI-18, OI-21, đặc biệt OI-11 | Thống nhất phạm vi release; xác định các OI còn mở ảnh hưởng phạm vi đó, thứ tự xử lý và thời điểm cần quyết định trước khi lập cam kết triển khai. |
-| RISK-02 | Các nhóm triển khai vẫn có thể diễn giải khác nhau về các phần chưa chốt của vòng đời Booking/Trip, nhất là mất kết nối, trạng thái Driver chi tiết, cước/phí hủy và thao tác xử lý Trip lỗi. | Hành vi không nhất quán giữa các chức năng; phát sinh lỗi tích hợp và chi phí sửa đổi. | P004–P006, P012; OI-04, OI-05, OI-14, OI-20 | Rà soát chung các phần còn mở của luồng, ngoại lệ và chuyển trạng thái; ghi nhận quyết định trước khi hoàn thiện thiết kế và Test Case liên quan. |
-| RISK-03 | Tích hợp hoặc đối soát thanh toán có thể bị gián đoạn khi cước, nhà cung cấp, giao tiếp và quy tắc xử lý kết quả chưa thống nhất. | Sai lệch số tiền/kết quả giao dịch, kéo dài kiểm thử tích hợp hoặc làm lại thiết kế. | P007; OI-01, OI-07, OI-15, OI-17 | Thống nhất quy tắc cước và hợp đồng giao tiếp; chuẩn bị môi trường thử và các tình huống thành công, thất bại, kết quả trùng/muộn. |
+| RISK-01 | Chậm triển khai nếu các quyết định tổ chức hoặc tích hợp còn mở không được xử lý kịp thời. Các quyết định nghiệp vụ cốt lõi cho MVP đã có MD-01–MD-07, nhưng nhà cung cấp, chất lượng định lượng và thủ tục nghiệm thu vẫn chưa chốt trong thời hạn 7 tuần. | Giảm thời gian tích hợp/kiểm thử hoặc vượt thời hạn. | P002; CON-01; OI-08–OI-21, đặc biệt OI-11–OI-13, OI-17 | Dùng adapter/simulator cho tích hợp MVP; chốt ngưỡng chất lượng và thủ tục nghiệm thu trước vòng kiểm thử cuối. |
+| RISK-02 | Chính sách chính thức của ABC sau MVP có thể khác MD-01–MD-07. | Phải đổi bảng giá, retention, hủy hoặc retry sau demo. | P012; MD-01–MD-07 | Cô lập các rule bằng cấu hình/policy service; giữ traceability giữa Customer Requirement và MVP Design Decision. |
+| RISK-03 | Tích hợp hoặc đối soát thanh toán có thể bị gián đoạn khi nhà cung cấp và hợp đồng giao tiếp chưa thống nhất. | Kéo dài kiểm thử tích hợp hoặc phải thay adapter. | P007; OI-17; MD-07 | Dùng payment adapter, idempotency và simulator; chuẩn bị tình huống thành công, thất bại, callback trùng/muộn. |
 | RISK-04 | Không có cơ sở kết luận nghiệm thu thống nhất nếu thước đo chất lượng và quy tắc báo cáo chưa được quyết định. | Tranh chấp kết quả kiểm thử hoặc kéo dài nghiệm thu. | P009–P010; OI-09, OI-13; AC-51–AC-55, AC-59–AC-62, AC-66 | Thống nhất công thức, dữ liệu đối chiếu, kịch bản và ngưỡng áp dụng trước khi kiểm chứng các yêu cầu được chọn cho release. |
-| RISK-05 | Dữ liệu có thể được truy cập, lưu giữ hoặc lưu vết không phù hợp nếu quyền, thời hạn lưu và tiêu chí bảo vệ còn thiếu. | Lộ dữ liệu, thiếu bằng chứng tra cứu hoặc phải sửa cơ chế bảo vệ và lưu trữ. | P007, P011–P012; OI-06, OI-08, OI-16, OI-17 | Thống nhất quyền truy cập, danh mục dữ liệu nhạy cảm, thời hạn lưu và nội dung audit; rà soát thiết kế và kiểm thử các kiểm soát tương ứng. |
+| RISK-05 | Dữ liệu có thể được truy cập hoặc lưu vết không phù hợp nếu quyền và tiêu chí bảo vệ còn thiếu; retention MVP đã được chốt tại MD-06. | Lộ dữ liệu, thiếu bằng chứng tra cứu hoặc phải sửa cơ chế bảo vệ. | P007, P011–P012; MD-06; OI-08, OI-16, OI-17 | Thống nhất quyền truy cập, danh mục dữ liệu nhạy cảm và nội dung audit; kiểm thử retention MD-06 cùng các kiểm soát bảo vệ. |
 
 ## 15.2. Trạng thái đánh giá và xử lý
 
